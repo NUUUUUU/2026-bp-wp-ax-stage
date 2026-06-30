@@ -1,3 +1,5 @@
 # 내려받은 BGM 음원(저작권·바이너리) — git에 넣지 않음
 assets/bgm/
 node_modules/
+# SDD 진행 스크래치(브리프·리포트·ledger)
+.superpowers/
