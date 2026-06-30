@@ -1,0 +1,135 @@
+<!-- 심사위원 안내 무대 슬라이드 — QR·접속주소·입력 4스텝 회전·차분 BGM -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>심사 평가 안내</title>
+<style>
+  :root{ --rausch:#FF385C; --ink:#F4F4F5; --muted:#9aa0a6; --bg:#0E0E12; --card:#17171D; --line:#2A2A33; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);
+    overflow:hidden;}
+  /* 16:9 무대 캔버스: 1920x1080 기준으로 스케일 */
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  #canvas{width:1920px;height:1080px;transform-origin:center center;display:grid;
+    grid-template-columns:780px 1fr;gap:64px;padding:96px 110px;align-content:center;}
+  .left{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:var(--card);border:1px solid var(--line);border-radius:28px;padding:56px 48px;}
+  .left .label{font-size:26px;font-weight:700;color:var(--rausch);letter-spacing:.02em;margin-bottom:28px;}
+  #qr{width:440px;height:440px;background:#fff;border-radius:20px;padding:24px;display:flex;align-items:center;justify-content:center;}
+  #qr svg{width:100%;height:100%;}
+  .url{margin-top:30px;font-size:30px;font-weight:700;word-break:break-all;text-align:center;color:#fff;}
+  .url small{display:block;font-size:20px;color:var(--muted);font-weight:500;margin-top:8px;}
+  .right{display:flex;flex-direction:column;justify-content:center;}
+  .htitle{font-size:30px;color:var(--muted);font-weight:600;}
+  .h1{font-size:72px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:10px 0 12px;}
+  .h1 b{color:var(--rausch);}
+  .recusal{display:inline-flex;align-items:center;gap:10px;font-size:24px;font-weight:600;color:#cfe9d8;
+    background:rgba(26,127,85,.18);border:1px solid rgba(26,127,85,.5);padding:14px 22px;border-radius:999px;margin-top:8px;}
+  .steps{margin-top:46px;display:flex;flex-direction:column;gap:18px;}
+  .step{display:flex;align-items:center;gap:26px;padding:26px 30px;border-radius:20px;border:1px solid var(--line);
+    background:#121218;opacity:.35;transition:opacity .4s, transform .4s, border-color .4s;}
+  .step.on{opacity:1;border-color:var(--rausch);transform:translateX(8px);background:#1b1b22;}
+  .step .no{flex:0 0 auto;width:62px;height:62px;border-radius:16px;display:grid;place-items:center;
+    font-size:30px;font-weight:800;background:#000;color:var(--rausch);border:1.5px solid var(--line);}
+  .step.on .no{background:var(--rausch);color:#fff;border-color:var(--rausch);}
+  .step .tx{font-size:34px;font-weight:700;}
+  .step .tx small{display:block;font-size:22px;color:var(--muted);font-weight:500;margin-top:4px;}
+  .hint{position:fixed;bottom:26px;left:0;right:0;text-align:center;color:var(--muted);font-size:18px;opacity:.7;}
+  #start{position:fixed;inset:0;background:#0E0E12;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:20px;cursor:pointer;z-index:20;}
+  #start h2{font-size:48px;font-weight:800;} #start p{font-size:24px;color:var(--muted);}
+  .blackout{position:fixed;inset:0;background:#000;z-index:30;display:none;}
+  .blackout.on{display:block;}
+</style>
+</head>
+<body>
+<div id="start"><h2>심사 평가 안내</h2><p>화면을 클릭하거나 Space를 눌러 시작</p></div>
+<div id="stage"><div id="canvas">
+  <div class="left">
+    <div class="label">📱 심사 평가 페이지 접속</div>
+    <div id="qr"></div>
+    <div class="url" id="url"></div>
+  </div>
+  <div class="right">
+    <div class="htitle">지금부터</div>
+    <div class="h1"><b>심사 평가</b> 시간입니다</div>
+    <div class="recusal">✓ 본인 소속 팀은 자동으로 평가 대상에서 제외됩니다</div>
+    <div class="steps" id="steps"></div>
+  </div>
+</div></div>
+<div class="hint">→ / Space 다음 · ← 이전 · F 전체화면 · B 블랙아웃</div>
+<div class="blackout" id="blackout"></div>
+<audio id="bgm" loop></audio>
+
+<script src="config.js"></script>
+<script src="vendor/qrcode.js"></script>
+<script>
+// 입력 4스텝 정의(judge 흐름을 본뜬 미니어처 텍스트)
+var STEPS = [
+  { no: "1", t: "평가 분야 선택", s: "BP · WP · AX 중 현재 발표 분야" },
+  { no: "2", t: "평가 대상 팀 선택", s: "법인/사업부 카드에서 선택 (본인 소속 제외)" },
+  { no: "3", t: "항목별 1~5점", s: "각 평가 항목을 1~5점 버튼으로 채점" },
+  { no: "4", t: "제출", s: "제출 후에도 평가 시간 내 수정 가능" }
+];
+var stepsEl = document.getElementById("steps");
+stepsEl.innerHTML = STEPS.map(function (s) {
+  return "<div class='step'><div class='no'>" + s.no + "</div><div class='tx'>" + s.t + "<small>" + s.s + "</small></div></div>";
+}).join("");
+var stepNodes = stepsEl.querySelectorAll(".step");
+
+// QR + URL
+(function () {
+  var qr = qrcode(0, "M");
+  qr.addData(CONFIG.judgeUrl);
+  qr.make();
+  document.getElementById("qr").innerHTML = qr.createSvgTag(6, 0);
+  var u = CONFIG.judgeUrl.replace(/^https?:\/\//, "");
+  document.getElementById("url").innerHTML = u + "<small>휴대폰 카메라로 QR을 스캔하세요</small>";
+})();
+
+// 16:9 스케일 맞춤
+function fit() {
+  var c = document.getElementById("canvas");
+  var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+  c.style.transform = "scale(" + s + ")";
+}
+window.addEventListener("resize", fit); fit();
+
+// 스텝 자동 회전
+var cur = 0;
+function showStep(i) {
+  cur = (i + stepNodes.length) % stepNodes.length;
+  stepNodes.forEach(function (n, k) { n.classList.toggle("on", k === cur); });
+}
+var timer = null;
+function autorotate() { clearInterval(timer); timer = setInterval(function () { showStep(cur + 1); }, 3500); }
+
+// 시작 게이트(BGM 자동재생 정책 대응)
+var started = false;
+function start() {
+  if (started) return; started = true;
+  document.getElementById("start").style.display = "none";
+  var bgm = document.getElementById("bgm");
+  if (CONFIG.bgm && CONFIG.bgm.mode === "file") {
+    bgm.src = CONFIG.bgm.file; bgm.volume = CONFIG.bgm.volume != null ? CONFIG.bgm.volume : 0.5;
+    bgm.play().catch(function () {});
+  }
+  showStep(0); autorotate();
+}
+document.getElementById("start").addEventListener("click", start);
+
+// 제어키
+var blackout = document.getElementById("blackout");
+document.addEventListener("keydown", function (e) {
+  if (e.key === " " || e.key === "ArrowRight") { e.preventDefault(); if (!started) { start(); return; } showStep(cur + 1); autorotate(); }
+  else if (e.key === "ArrowLeft") { showStep(cur - 1); autorotate(); }
+  else if (e.key.toLowerCase() === "f") { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+  else if (e.key.toLowerCase() === "b") { blackout.classList.toggle("on"); }
+});
+document.getElementById("stage").addEventListener("click", function () { if (started) { showStep(cur + 1); autorotate(); } });
+</script>
+</body>
+</html>
