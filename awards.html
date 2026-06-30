@@ -43,6 +43,7 @@
   @keyframes irisFlash{0%{opacity:.55}30%{opacity:0}100%{opacity:0}}
   /* ===== 무대 ===== */
   #stage{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;text-align:center;padding:6vh 6vw;}
+  #stage.bannerlift{z-index:8;}  /* 포토타임: 현수막을 #dark(z5) 위로 — 어두워지는 버그 방지 */
   #content{max-width:1180px;width:100%;}
   #content.out{animation:sceneOut .34s ease both;}
   @keyframes sceneOut{to{opacity:0;transform:translateY(-16px)}}
@@ -78,10 +79,10 @@
   .sec-name{font-family:var(--serif);font-weight:900;font-size:clamp(52px,10vw,140px);line-height:1.04;}
   .sec-full{font-size:clamp(13px,1.7vw,21px);letter-spacing:.42em;color:#9a8a5c;margin-top:1.6vh;text-transform:uppercase;}
   /* 티저 */
-  .tz-cat{font-size:clamp(14px,1.9vw,22px);letter-spacing:.16em;color:var(--gold-soft);font-weight:500;}
-  .tz-main{font-family:var(--serif);font-weight:700;font-size:clamp(30px,4.6vw,60px);margin-top:1.2vh;color:#F0DDA4;}
-  .tz-dots{font-family:var(--serif);font-size:clamp(30px,5.2vw,64px);color:#cdbd84;margin-top:2.2vh;letter-spacing:.12em;
-    animation:dots 1.4s steps(4) infinite;}
+  .tz-main{font-weight:900;font-size:clamp(34px,5.4vw,76px);letter-spacing:-.01em;line-height:1.1;}
+  .tz-q{font-weight:700;font-size:clamp(24px,3.4vw,46px);color:#E8E2CF;margin-top:1.6vh;}
+  .tz-dots{font-weight:700;font-size:clamp(26px,4vw,52px);color:#cdbd84;margin-top:2.6vh;letter-spacing:.14em;
+    animation:dots 1s steps(3) infinite;}
   @keyframes dots{0%{opacity:.35}50%{opacity:1}100%{opacity:.35}}
   /* 리빌 */
   .rv-grid{display:flex;align-items:center;justify-content:center;gap:5vw;text-align:left;}
@@ -91,13 +92,16 @@
   .rv-body{margin-top:2.2vh;}
   .rank-sub{font-size:clamp(11px,1.3vw,16px);letter-spacing:.42em;color:#8a7c52;text-transform:uppercase;}
   .name{font-family:var(--sans);font-weight:900;font-size:clamp(54px,9.4vw,140px);line-height:1.03;letter-spacing:-.01em;margin-top:.3vh;}
-  .name.glow-g{animation:nameIn 1s cubic-bezier(.2,.7,.2,1) both, glowG 2.8s ease-in-out 1s infinite;}
-  .name.glow-s{animation:nameIn 1s cubic-bezier(.2,.7,.2,1) both, glowS 2.8s ease-in-out 1s infinite;}
-  .name.glow-b{animation:nameIn 1s cubic-bezier(.2,.7,.2,1) both, glowB 2.8s ease-in-out 1s infinite;}
-  @keyframes nameIn{0%{opacity:0;transform:scale(.82);filter:blur(12px)}55%{opacity:1;filter:blur(0)}100%{transform:scale(1)}}
+  /* 이름: 인너 span이 그라데이션+글로우(상시), 아우터 .name.rb가 등장(슬램) — 깜빡임 없음 */
+  .name-gold,.name-silver{display:inline-block;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .name-gold{background-image:linear-gradient(110deg,#B8862B 0%,#E8C977 16%,#FFFBE9 33%,#F2D88A 46%,#D4AF37 62%,#9A6F1E 100%);
+    background-size:230% 100%;color:#E8C977;animation:shimmerSweep 3.6s linear infinite, glowG 2.8s ease-in-out infinite;}
+  .name-silver{background-image:linear-gradient(180deg,#FFFFFF 0%,#E4EAF2 34%,#BCC6D4 64%,#7C8696 100%);
+    color:#CBD5E3;animation:glowS 2.8s ease-in-out infinite;}
   @keyframes glowG{0%,100%{filter:drop-shadow(0 0 18px rgba(212,175,55,.32))}50%{filter:drop-shadow(0 0 46px rgba(255,214,120,.85))}}
   @keyframes glowS{0%,100%{filter:drop-shadow(0 0 16px rgba(180,195,215,.3))}50%{filter:drop-shadow(0 0 42px rgba(225,235,245,.72))}}
-  @keyframes glowB{0%,100%{filter:drop-shadow(0 0 16px rgba(201,133,63,.3))}50%{filter:drop-shadow(0 0 42px rgba(231,183,130,.72))}}
+  .name.rb{transform:scale(1.14);transition:opacity .55s ease, transform .75s cubic-bezier(.15,1.5,.4,1);}
+  .name.rb.show{transform:scale(1);}
   /* median 공식점수 — 시그니처 */
   .score{margin-top:2.6vh;display:inline-block;}
   .score-num{font-family:var(--serif);font-weight:900;font-size:clamp(40px,6vw,82px);line-height:1;}
@@ -106,8 +110,9 @@
     animation:grow .8s ease .3s both;}
   .score-label{font-size:clamp(11px,1.3vw,15px);letter-spacing:.16em;color:#8a7c52;margin-top:1vh;}
   .score-label b{color:var(--gold-soft);font-weight:500;}
-  .prize{display:inline-block;margin-top:2.4vh;padding:.55em 1.6em;border:1px solid rgba(212,175,55,.5);border-radius:40px;
-    color:#ecd89c;font-size:clamp(14px,1.7vw,21px);letter-spacing:.04em;background:rgba(212,175,55,.05);}
+  .prize{display:inline-block;margin-top:2.8vh;padding:.5em 1.3em;border:1.5px solid rgba(212,175,55,.6);border-radius:16px;
+    color:#fff4cf;font-weight:800;font-size:clamp(24px,3.2vw,46px);letter-spacing:.01em;
+    background:linear-gradient(180deg,rgba(212,175,55,.18),rgba(212,175,55,.05));box-shadow:0 8px 28px rgba(212,175,55,.2);}
   .stars{margin-top:2vh;color:#d4af37;font-size:clamp(15px,1.9vw,24px);letter-spacing:.5em;}
   .rb{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease;}
   .rb.show{opacity:1;transform:none;}
@@ -204,7 +209,6 @@
 <div id="hint">Space · 클릭 다음(공개 → 포토타임 → 다음) &nbsp;|&nbsp; ← 이전 &nbsp;|&nbsp; R 새로고침 &nbsp;|&nbsp; F 전체화면 &nbsp;|&nbsp; B 블랙아웃 &nbsp;|&nbsp; M 음소거</div>
 <div id="start"><div class="gicon">🏆</div><h2 class="g-gold">2026 시상식</h2><p id="startMsg">결과를 불러오는 중…</p></div>
 <div id="blackout"></div>
-<audio id="bgm" loop></audio>
 
 <script src="config.js"></script>
 <script src="logic.js"></script>
@@ -222,7 +226,7 @@ var DEMO_SUBS = (function () {
 })();
 
 // 부문별 영문 부제(발표 카피)
-var CATMETA = { BP: "Best Practice", WP: "Worst → Best Practice", AX: "Digital Transformation" };
+var CATMETA = { BP: "Best Practice", WP: "Worst Practice", AX: "Digital Transformation" };
 var RANKSUB = { 1: "1st Place", 2: "2nd Place", 3: "3rd Place" };
 // 법인 → 국기(임시; 추후 법인 이미지로 교체). 한국 소속은 태극기.
 var FLAG = { "중국법인": "cn", "태국법인": "th", "이집트법인": "eg", "HQ": "kr", "한국사업부": "kr", "기술연구소": "kr" };
@@ -297,9 +301,9 @@ function sceneHTML(s) {
       + "<div class='sec-full a' style='animation-delay:.7s'>" + esc(CATMETA[s.cat] || s.name) + "</div>";
   }
   if (s.type === "teaser") {
-    return "<div class='tz-cat a' style='animation-delay:.1s'>" + esc(s.cat) + " 부문 · " + esc(s.title) + "</div>"
-      + "<div class='tz-main g-gold a serif' style='animation-delay:.4s'>다음 수상</div>"
-      + "<div class='tz-dots a' style='animation-delay:.85s'>수상자는 . . .</div>";
+    return "<div class='tz-main a' style='animation-delay:.1s'><span class='shimmer-gold'>" + esc(s.cat) + " 부문 " + esc(s.title) + " 수상자!</span></div>"
+      + "<div class='tz-q a' style='animation-delay:.45s'>누구일까요?</div>"
+      + "<div class='tz-dots a' style='animation-delay:.85s'>두구두구두구…</div>";
   }
   if (s.type === "reveal") {
     var grad = tierGrad(s.rank), glow = tierGlow(s.rank), ring = tierCls(s.rank);
@@ -310,12 +314,11 @@ function sceneHTML(s) {
       + "<div class='rv-body'>"
       + "<div class='rank-sub rb'>" + esc(RANKSUB[s.rank] || "") + "</div>"
       + (s.rank === 1
-        ? "<div class='name glow-g rb'><span class='shimmer-gold'>" + esc(s.team) + "</span></div>"
-        : "<div class='name g-silver glow-s rb'>" + esc(s.team) + "</div>")
+        ? "<div class='name rb'><span class='name-gold'>" + esc(s.team) + "</span></div>"
+        : "<div class='name rb'><span class='name-silver'>" + esc(s.team) + "</span></div>")
       + "<div class='score rb'>"
       + "<span class='score-num " + grad + "' data-to='" + s.med.toFixed(1) + "'>0.0</span><span class='score-unit'>점</span>"
       + "<div class='score-line'></div>"
-      + "<div class='score-label'><b>공식 점수 · MEDIAN</b> — 담합 차단 중앙값 / 100점</div>"
       + "</div>"
       + (s.prize ? "<div class='prize rb'>" + esc(s.prize) + "</div>" : "")
       + "<div class='stars rb'>★ ★ ★</div>"
@@ -362,10 +365,12 @@ function render() {
   revealPhase = 0;
   content.classList.remove("out", "banner");
   document.getElementById("dark").classList.remove("on");
+  document.getElementById("stage").classList.remove("bannerlift");
   content.innerHTML = sceneHTML(s);
   document.getElementById("progress").style.width = (idx / (SCENES.length - 1) * 100) + "%";
   if (s.type === "cover") woven.show(); else woven.hide();
   document.getElementById("cvscrim").classList.toggle("on", s.type === "cover");
+  if (s.type === "teaser") drumroll();
   if (s.type === "reveal") revealCinematic(s);
 }
 
@@ -413,8 +418,8 @@ function go(n) {
   content.classList.add("out");
   setTimeout(function () { idx = next; render(); }, 330);
 }
-function enterBanner() { revealPhase = 1; content.classList.add("banner"); document.getElementById("dark").classList.add("on"); }
-function exitBanner() { revealPhase = 0; content.classList.remove("banner"); document.getElementById("dark").classList.remove("on"); }
+function enterBanner() { revealPhase = 1; content.classList.add("banner"); document.getElementById("dark").classList.add("on"); document.getElementById("stage").classList.add("bannerlift"); }
+function exitBanner() { revealPhase = 0; content.classList.remove("banner"); document.getElementById("dark").classList.remove("on"); document.getElementById("stage").classList.remove("bannerlift"); }
 function next() { if (SCENES[idx] && SCENES[idx].type === "reveal" && revealPhase === 0) { enterBanner(); return; } go(idx + 1); }
 function prev() { if (revealPhase === 1) { exitBanner(); return; } go(idx - 1); }
 
@@ -520,21 +525,42 @@ function chime(rank) {
     });
   } catch (e) {}
 }
+// 티저 긴장감 — 가속하는 드럼롤(Web Audio, 파일 없음)
+function drumroll() {
+  if (muted) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    var ac = actx, t = ac.currentTime + 0.02;
+    var buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.2), ac.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    var n = 26;
+    for (var k = 0; k < n; k++) {
+      var src = ac.createBufferSource(); src.buffer = buf;
+      var bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 210; bp.Q.value = 1.1;
+      var g = ac.createGain(); src.connect(bp); bp.connect(g); g.connect(ac.destination);
+      var amp = 0.04 + (k / n) * 0.11;
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+      src.start(t); src.stop(t + 0.06);
+      t += Math.max(0.034, 0.086 - (k / n) * 0.045);
+    }
+    var s2 = ac.createBufferSource(); s2.buffer = buf;
+    var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380;
+    var g2 = ac.createGain(); s2.connect(lp); lp.connect(g2); g2.connect(ac.destination);
+    g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(0.32, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+    s2.start(t); s2.stop(t + 0.5);
+  } catch (e) {}
+}
 function toggleMute() {
   muted = !muted;
   var b = document.getElementById("mute"); b.textContent = muted ? "✕" : "♪"; b.style.color = muted ? "#7a6f50" : "#cbbd86";
-  var bgm = document.getElementById("bgm"); if (bgm) bgm.muted = muted;
 }
 
 /* ===================== 시작/오디오 언락 ===================== */
 function begin() {
   if (started || !SCENES.length) return; started = true;
   document.getElementById("start").style.display = "none";
-  if (!new URLSearchParams(location.search).has("auto")) { // 스크린샷 모드는 BGM 로딩 생략
-    var bgm = document.getElementById("bgm");
-    if (CONFIG.bgm && CONFIG.bgm.mode === "file") { bgm.src = CONFIG.bgm.file; bgm.volume = CONFIG.bgm.volume != null ? CONFIG.bgm.volume : 0.5; bgm.play().catch(function () {}); }
-    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
-  }
+  // 시상 덱은 BGM 음악 없음(추출 음원은 안내 덱 전용). 효과음(차임·드럼롤)만 Web Audio.
+  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
   idx = 0; render();
 }
 
