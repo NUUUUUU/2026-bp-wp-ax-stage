@@ -110,9 +110,9 @@
     animation:grow .8s ease .3s both;}
   .score-label{font-size:clamp(11px,1.3vw,15px);letter-spacing:.16em;color:#8a7c52;margin-top:1vh;}
   .score-label b{color:var(--gold-soft);font-weight:500;}
-  .prize{display:inline-block;margin-top:2.8vh;padding:.5em 1.3em;border:1.5px solid rgba(212,175,55,.6);border-radius:16px;
-    color:#fff4cf;font-weight:800;font-size:clamp(24px,3.2vw,46px);letter-spacing:.01em;
-    background:linear-gradient(180deg,rgba(212,175,55,.18),rgba(212,175,55,.05));box-shadow:0 8px 28px rgba(212,175,55,.2);}
+  .prize{display:block;width:fit-content;margin-top:2.2vh;padding:.45em 1.15em;border:1.5px solid rgba(212,175,55,.55);border-radius:12px;
+    color:#f4e3a8;font-weight:700;font-size:clamp(16px,1.9vw,27px);letter-spacing:.01em;
+    background:linear-gradient(180deg,rgba(212,175,55,.14),rgba(212,175,55,.04));box-shadow:0 6px 20px rgba(212,175,55,.14);}
   .stars{margin-top:2vh;color:#d4af37;font-size:clamp(15px,1.9vw,24px);letter-spacing:.5em;}
   .rb{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease;}
   .rb.show{opacity:1;transform:none;}
@@ -302,8 +302,7 @@ function sceneHTML(s) {
   }
   if (s.type === "teaser") {
     return "<div class='tz-main a' style='animation-delay:.1s'><span class='shimmer-gold'>" + esc(s.cat) + " 부문 " + esc(s.title) + " 수상자!</span></div>"
-      + "<div class='tz-q a' style='animation-delay:.45s'>누구일까요?</div>"
-      + "<div class='tz-dots a' style='animation-delay:.85s'>두구두구두구…</div>";
+      + "<div class='tz-q a' style='animation-delay:.45s'>누구일까요?</div>";
   }
   if (s.type === "reveal") {
     var grad = tierGrad(s.rank), glow = tierGlow(s.rank), ring = tierCls(s.rank);
