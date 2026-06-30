@@ -9,9 +9,13 @@ const SCORING = require("../logic.js");
 
 // admin 스냅샷의 <script>를 CONFIG 주입해 vm으로 실행 → 실제 ranking 확보
 function loadAdmin(config) {
+  const adminConfig = Object.assign({}, config, {
+    admin: { password: "x", resetKey: "x", adminTitle: "" },
+    anomaly: { gapHi: 8, extLow: 35, extHigh: 90, sdFlag: 20, extRatioFlag: 50 }
+  });
   const html = fs.readFileSync(path.join(__dirname, "fixtures", "admin.template.html"), "utf8");
   const m = html.match(/<script>([\s\S]*?)<\/script>/);
-  const code = m[1].replace('"__CONFIG__"', JSON.stringify(config));
+  const code = m[1].replace('"__CONFIG__"', JSON.stringify(adminConfig));
   const noop = () => {};
   const makeNode = () => ({
     style: {}, dataset: {}, value: "", _html: "",
@@ -51,6 +55,7 @@ test("parity: ranking 팀 순서·중앙값이 admin과 동일(BP/WP/AX)", () =>
   for (const cat of ["BP", "WP", "AX"]) {
     admin.DATA = admin.buildDATA(subs);
     const a = admin.ranking(cat);
+    assert.equal(a[0].t, CONFIG.teams[0], cat + " admin 집계가 퇴화(빈 DATA)되지 않았는지 확인");
     const b = SCORING.ranking(CONFIG, mineDATA, cat);
     assert.deepEqual(b.map((r) => r.t), a.map((r) => r.t), cat + " 팀 순서 불일치");
     a.forEach((r, i) => assert.ok(Math.abs(r.med - b[i].med) < 1e-9, cat + " 중앙값 불일치 " + r.t));

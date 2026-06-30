@@ -44,8 +44,6 @@ var CONFIG = {
   apiUrl: "PASTE_YOUR_APPS_SCRIPT_URL_HERE",
   judgeUrl: "https://example.invalid/judge.html",
   revealOrder: ["WP", "BP", "AX"],
-  bgm: { mode: "file", file: "assets/bgm/bgm.m4a", youtubeId: "U34kLXjdw90", volume: 0.5 },
-  admin: { password: "changeme", resetKey: "reset", adminTitle: "심사 결과 관리자" },
-  anomaly: { gapHi: 10, extLow: 20, extHigh: 90, sdFlag: 20, extRatioFlag: 30 }
+  bgm: { mode: "file", file: "assets/bgm/bgm.m4a", youtubeId: "U34kLXjdw90", volume: 0.5 }
 };
 if (typeof module !== "undefined" && module.exports) module.exports = CONFIG;
