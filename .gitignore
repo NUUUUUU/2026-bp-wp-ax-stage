@@ -3,3 +3,6 @@ assets/bgm/
 node_modules/
 # SDD 진행 스크래치(브리프·리포트·ledger)
 .superpowers/
+# 비주얼 QA 도구·캡처(개발용)
+_preview/
+_shoot.cjs
