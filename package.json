@@ -1,0 +1,9 @@
+{
+  "name": "stage-slides-2026",
+  "private": true,
+  "version": "1.0.0",
+  "description": "2026 BP/WP/AX 경진대회 무대 송출 슬라이드",
+  "scripts": {
+    "test": "node --test"
+  }
+}
