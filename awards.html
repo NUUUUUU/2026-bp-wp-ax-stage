@@ -550,58 +550,106 @@ function drawCf() {
   requestAnimationFrame(drawCf);
 }
 
-/* ===================== 사운드 ===================== */
-var muted = false, actx = null;
+/* ===================== 사운드 (Web Audio, 파일 없음·오프라인) ===================== */
+var muted = false, actx = null, master = null, noiseBuf = null;
+// 마스터 버스: 컴프레서로 레이어링 시 클리핑 방지
+function audio() {
+  if (!actx) {
+    try { actx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+    var comp = actx.createDynamicsCompressor();
+    comp.threshold.value = -14; comp.knee.value = 22; comp.ratio.value = 3.4; comp.attack.value = 0.004; comp.release.value = 0.22;
+    master = actx.createGain(); master.gain.value = muted ? 0 : 0.9;
+    master.connect(comp); comp.connect(actx.destination);
+  }
+  return actx;
+}
+function noise() {
+  var ac = audio(); if (!ac) return null;
+  if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+  return noiseBuf;
+}
+// 팀파니 타격: 피치 급강하 저음 + 짧은 감쇠
+function timpani(t, freq, amp, dur) {
+  var ac = audio(); if (!ac) return;
+  var o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.setValueAtTime(freq * 1.7, t); o.frequency.exponentialRampToValueAtTime(freq, t + 0.07);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(amp, t + 0.006); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t + dur + 0.05);
+}
+// 심벌 크래시: 고역 화이트노이즈 + 긴 감쇠
+function cymbal(t, amp, dur) {
+  var ac = audio(); if (!ac) return; var nb = noise(); if (!nb) return;
+  var s = ac.createBufferSource(); s.buffer = nb; s.loop = true;
+  var hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 5200;
+  var g = ac.createGain(); s.connect(hp); hp.connect(g); g.connect(master);
+  g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(amp, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  s.start(t); s.stop(t + dur + 0.1);
+}
+// 팡파레: 밝은 브라스풍 코드(도-미-솔-도, 로우패스 sawtooth·살짝 디튠)
+function fanfare(t, rootMidi, big) {
+  var ac = audio(); if (!ac) return;
+  var seq = big ? [[0, 0], [4, 0.12], [7, 0.24], [12, 0.42]] : [[0, 0], [4, 0.13], [7, 0.28]];
+  seq.forEach(function (st) {
+    var f = 440 * Math.pow(2, (rootMidi + st[0] - 69) / 12), tt = t + st[1];
+    var o1 = ac.createOscillator(), o2 = ac.createOscillator(), g = ac.createGain(), lp = ac.createBiquadFilter();
+    o1.type = "sawtooth"; o2.type = "sawtooth"; o1.frequency.value = f; o2.frequency.value = f * 1.006;
+    lp.type = "lowpass"; lp.frequency.value = 3000;
+    o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
+    var pk = big ? 0.11 : 0.09;
+    g.gain.setValueAtTime(0.0001, tt); g.gain.linearRampToValueAtTime(pk, tt + 0.03); g.gain.setValueAtTime(pk, tt + 0.5); g.gain.exponentialRampToValueAtTime(0.0001, tt + 1.4);
+    o1.start(tt); o2.start(tt); o1.stop(tt + 1.5); o2.stop(tt + 1.5);
+  });
+}
+// 공개 순간(리빌) — 심벌 크래시 + 팡파레 + 팀파니 (대상은 더 웅장)
 function chime(rank) {
   if (muted) return;
   try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    var notes = rank === 1 ? [523, 659, 784, 1047] : rank === 2 ? [466, 587, 740] : [440, 554, 659];
-    notes.forEach(function (f, i) {
-      var o = actx.createOscillator(), g = actx.createGain();
-      o.type = "triangle"; o.frequency.value = f; o.connect(g); g.connect(actx.destination);
-      var t = actx.currentTime + i * 0.09;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.16, t + .03); g.gain.exponentialRampToValueAtTime(.0001, t + 1.2);
-      o.start(t); o.stop(t + 1.3);
-    });
+    var ac = audio(); if (!ac) return; var t = ac.currentTime + 0.01, big = rank === 1;
+    cymbal(t, big ? 0.20 : 0.14, big ? 1.7 : 1.1);
+    timpani(t, big ? 98 : 110, big ? 0.5 : 0.38, big ? 0.9 : 0.7);
+    fanfare(t + 0.02, big ? 72 : 69, big);
+    if (big) timpani(t + 0.52, 65, 0.42, 0.9);
   } catch (e) {}
 }
-// 티저 긴장감 — 가속하는 드럼롤(Web Audio, 파일 없음)
+// 티저 긴장감 — 가속 드럼롤 + 상승 라이저 + 팀파니 언더 + 마무리 붐
 function drumroll() {
   if (muted) return;
   try {
-    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-    var ac = actx, t = ac.currentTime + 0.02;
-    var buf = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.2), ac.sampleRate), d = buf.getChannelData(0);
-    for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    var n = 26;
+    var ac = audio(); if (!ac) return; var nb = noise(); if (!nb) return;
+    var t0 = ac.currentTime + 0.02, t = t0, n = 34;
     for (var k = 0; k < n; k++) {
-      var src = ac.createBufferSource(); src.buffer = buf;
-      var bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 210; bp.Q.value = 1.1;
-      var g = ac.createGain(); src.connect(bp); bp.connect(g); g.connect(ac.destination);
-      var amp = 0.04 + (k / n) * 0.11;
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(amp, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
-      src.start(t); src.stop(t + 0.06);
-      t += Math.max(0.034, 0.086 - (k / n) * 0.045);
+      var s = ac.createBufferSource(); s.buffer = nb;
+      var bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 200 + k * 4; bp.Q.value = 1.0;
+      var g = ac.createGain(); s.connect(bp); bp.connect(g); g.connect(master);
+      var amp = 0.05 + (k / n) * 0.16;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(amp, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+      s.start(t, Math.random() * 0.5, 0.06); s.stop(t + 0.08);
+      t += Math.max(0.028, 0.09 - (k / n) * 0.058);
     }
-    var s2 = ac.createBufferSource(); s2.buffer = buf;
-    var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380;
-    var g2 = ac.createGain(); s2.connect(lp); lp.connect(g2); g2.connect(ac.destination);
-    g2.gain.setValueAtTime(0, t); g2.gain.linearRampToValueAtTime(0.32, t + 0.01); g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
-    s2.start(t); s2.stop(t + 0.5);
+    var rollEnd = t;
+    for (var m = 0; m < 4; m++) timpani(t0 + (rollEnd - t0) * (m / 4), 82, 0.13 + m * 0.05, 0.35);
+    // 상승 라이저(긴장 고조)
+    var o = ac.createOscillator(), rg = ac.createGain(), lp = ac.createBiquadFilter();
+    o.type = "sawtooth"; lp.type = "lowpass"; lp.frequency.value = 1400;
+    o.frequency.setValueAtTime(120, t0); o.frequency.exponentialRampToValueAtTime(520, rollEnd);
+    rg.gain.setValueAtTime(0.0001, t0); rg.gain.exponentialRampToValueAtTime(0.09, rollEnd - 0.05); rg.gain.exponentialRampToValueAtTime(0.0001, rollEnd + 0.15);
+    o.connect(lp); lp.connect(rg); rg.connect(master); o.start(t0); o.stop(rollEnd + 0.2);
+    // 마무리 저음 붐
+    timpani(rollEnd, 60, 0.5, 0.7);
   } catch (e) {}
 }
 function toggleMute() {
   muted = !muted;
   var b = document.getElementById("mute"); b.textContent = muted ? "✕" : "♪"; b.style.color = muted ? "#7a6f50" : "#cbbd86";
+  if (master && actx) master.gain.setTargetAtTime(muted ? 0 : 0.9, actx.currentTime, 0.02); // 재생 중 소리도 즉시 반영
 }
 
 /* ===================== 시작/오디오 언락 ===================== */
 function begin() {
   if (started || !SCENES.length) return; started = true;
   document.getElementById("start").style.display = "none";
-  // 시상 덱은 BGM 음악 없음(추출 음원은 안내 덱 전용). 효과음(차임·드럼롤)만 Web Audio.
-  try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+  // 시상 덱은 BGM 음악 없음(추출 음원은 안내 덱 전용). 효과음(드럼롤·심벌·팡파레)만 Web Audio.
+  try { audio(); } catch (e) {}
   idx = 0; render();
 }
 
