@@ -47,6 +47,9 @@
   #content{max-width:1180px;width:100%;}
   #content.out{animation:sceneOut .34s ease both;}
   @keyframes sceneOut{to{opacity:0;transform:translateY(-16px)}}
+  /* 배너에서 나갈 때: transform 없이 페이드만(=fixed 배너 하단 점프 방지) */
+  #content.outb{animation:sceneOutFade .34s ease both;}
+  @keyframes sceneOutFade{to{opacity:0}}
   /* 금속 텍스트 */
   .g-gold{background:linear-gradient(180deg,#FFF7DD 0%,#F3D88A 32%,#D4AF37 64%,#9A6F1E 100%);
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#D4AF37;}
@@ -175,6 +178,8 @@
   .fn-team{font-weight:900;font-size:clamp(18px,2vw,27px);text-align:left;}
   .fn-score{font-weight:700;font-size:clamp(14px,1.5vw,19px);color:#cfc9b6;font-variant-numeric:tabular-nums;}
   .fn-score i{font-style:normal;font-size:.7em;color:#8a7c52;margin-left:1px;}
+  .fn-prize{font-weight:700;font-size:clamp(13px,1.5vw,18px);color:#f4e3a8;white-space:nowrap;}
+  .fn-congrats{font-family:var(--serif);font-weight:700;font-size:clamp(24px,3.4vw,46px);margin-top:3.2vh;letter-spacing:.02em;}
   /* HUD */
   #progress{position:fixed;z-index:7;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,#d4af37,#fff0c0);transition:width .4s;}
   #brand{position:fixed;z-index:7;top:18px;left:24px;color:#7e7048;font-size:13px;letter-spacing:.34em;font-weight:500;}
@@ -214,6 +219,8 @@
 <script src="logic.js"></script>
 <script src="vendor/three.min.js"></script>
 <script>
+// 운영 콘솔(admin.html)에서 저장한 apiUrl이 있으면 우선 사용
+try { var _a = localStorage.getItem("stage.apiUrl"); if (_a) CONFIG.apiUrl = _a; } catch (e) {}
 // 데모 더미(?demo=1): API 없이 리허설용 — 팀 총점이 명확히 갈리는 합성 제출
 var DEMO_SUBS = (function () {
   var subs = [];
@@ -255,9 +262,7 @@ function jsonp(params) {
 }
 
 // buildScreens(검증된 순서·집계) → 장면 시퀀스(커버/섹션/티저/리빌/피날레)
-function buildFrom(subs) {
-  var DATA = SCORING.buildDATA(CONFIG, subs);
-  SCREENS = SCORING.buildScreens(CONFIG, DATA);
+function buildScenes() {
   SCENES = [{ type: "cover" }];
   SCREENS.forEach(function (s) {
     if (s.type === "cat") SCENES.push({ type: "section", cat: s.label, name: s.name });
@@ -268,19 +273,54 @@ function buildFrom(subs) {
   WINNERS = SCREENS.filter(function (s) { return s.type === "reveal"; });
   idx = 0; revealPhase = 0;
 }
+// 라이브/데모: 원시 제출 → 중앙값 집계 → 화면
+function buildFrom(subs) {
+  SCREENS = SCORING.buildScreens(CONFIG, SCORING.buildDATA(CONFIG, subs));
+  buildScenes();
+}
+function medalFor(rank) { return rank === 1 ? "🥇" : rank === 2 ? "🥈" : "🏅"; }
+// 확정본(운영 콘솔 admin.html에서 CEO 지시 반영·확정): 집계 대신 확정 명단 그대로 송출
+function buildConfirmed(p) {
+  var stepByKey = {}; CONFIG.steps.forEach(function (s) { stepByKey[s.key] = s; });
+  SCREENS = [];
+  (p.order && p.order.length ? p.order : SCORING.revealCats(CONFIG)).forEach(function (cat) {
+    var st = stepByKey[cat] || { label: cat, sub: cat };
+    SCREENS.push({ type: "cat", cat: cat, label: st.label, name: st.sub || st.label });
+    var ws = ((p.winners && p.winners[cat]) || []).slice().sort(function (a, b) { return b.rank - a.rank; });
+    ws.forEach(function (w) {
+      var base = { cat: cat, label: st.label, name: st.sub || st.label, rank: w.rank, title: w.ttl || w.title, prize: w.prize, medal: medalFor(w.rank), team: w.team, med: (w.med == null ? 0 : w.med), isGrand: w.rank === 1 };
+      SCREENS.push(Object.assign({ type: "suspense" }, base));
+      SCREENS.push(Object.assign({ type: "reveal" }, base));
+    });
+  });
+  buildScenes();
+}
+// 운영 콘솔이 저장한 확정 명단
+function readConfirmed() {
+  try { var r = localStorage.getItem("stage.confirmedWinners"); if (!r) return null; var p = JSON.parse(r); return (p && p.winners) ? p : null; } catch (e) { return null; }
+}
 
 function startMsg(t) { document.getElementById("startMsg").textContent = t; }
 
+// apiUrl이 실제 배포 주소로 설정됐는지(placeholder면 미설정으로 간주)
+function apiConfigured() {
+  var u = (CONFIG.apiUrl || "");
+  return /^https?:\/\//.test(u) && u.indexOf("PASTE_YOUR") === -1;
+}
 function loadResults() {
   var demo = new URLSearchParams(location.search).has("demo");
+  // 우선순위: ?demo > 확정본 > 라이브 > 데모 폴백(오류 화면 방지)
   if (demo) { buildFrom(DEMO_SUBS); startMsg("데모 데이터 준비 완료 · 클릭 또는 Space로 시작"); maybeAuto(); return Promise.resolve(); }
+  var conf = readConfirmed();
+  if (conf) { buildConfirmed(conf); startMsg("확정 수상자 로드됨 · 클릭 또는 Space로 시작"); maybeAuto(); return Promise.resolve(); }
+  if (!apiConfigured()) { buildFrom(DEMO_SUBS); startMsg("라이브 집계 미설정 · 데모 표시 · 클릭 또는 Space로 시작"); maybeAuto(); return Promise.resolve(); }
   return jsonp("action=get").then(function (d) {
     if (!d.ok) throw d.error || "오류";
     buildFrom(d.submissions || []);
     startMsg("결과 동기화 완료 · 클릭 또는 Space로 시작");
     maybeAuto();
   }).catch(function (e) {
-    startMsg("결과 로드 실패: " + e + " — R로 재시도");
+    startMsg("결과 로드 실패: " + e + " — R로 재시도(또는 ?demo=1 데모)");
   });
 }
 
@@ -343,7 +383,7 @@ function sceneHTML(s) {
         return "<div class='fn-row'>"
           + "<span class='fn-rank " + tierCls(w.rank) + "'>" + esc(w.title) + "</span>"
           + "<span class='fn-team " + tierGrad(w.rank) + "'>" + esc(w.team) + "</span>"
-          + "<span class='fn-score'>" + w.med.toFixed(1) + "<i>점</i></span></div>";
+          + "<span class='fn-prize'>" + esc(w.prize || "") + "</span></div>";
       }).join("");
       return "<div class='fn-col a' style='animation-delay:" + (0.4 + ci * 0.25).toFixed(2) + "s'>"
         + "<div class='fn-cat'><span class='fn-k g-gold'>" + esc(cat) + "</span><span class='fn-kf'>" + esc(CATMETA[cat] || "") + "</span></div>"
@@ -353,7 +393,8 @@ function sceneHTML(s) {
       + "<div class='fn-title a' style='animation-delay:.3s'><span class='shimmer-gold'>2026 수상자</span></div>"
       + "<div class='divline grow'></div>"
       + "<div class='fn-board'>" + board + "</div>"
-      + "<div class='cv-en a' style='animation-delay:1.4s;margin-top:3vh'>축하합니다 · SHINSHIN AWARDS 2026</div>";
+      + "<div class='fn-congrats a' style='animation-delay:1.3s'><span class='shimmer-gold'>수상을 축하드립니다</span></div>"
+      + "<div class='cv-en a' style='animation-delay:1.6s;margin-top:1.2vh'>SHINSHIN AWARDS 2026</div>";
   }
   return "";
 }
@@ -362,7 +403,7 @@ function sceneHTML(s) {
 function render() {
   var s = SCENES[idx];
   revealPhase = 0;
-  content.classList.remove("out", "banner");
+  content.classList.remove("out", "outb", "banner");
   document.getElementById("dark").classList.remove("on");
   document.getElementById("stage").classList.remove("bannerlift");
   content.innerHTML = sceneHTML(s);
@@ -414,7 +455,8 @@ function countUp(el, to, dur) {
 function go(n) {
   var next = Math.min(Math.max(n, 0), SCENES.length - 1);
   if (next === idx) return;
-  content.classList.add("out");
+  // 배너 상태에서 나갈 땐 transform 없는 페이드(outb)로 — fixed 배너가 하단으로 튀는 현상 방지
+  content.classList.add(content.classList.contains("banner") ? "outb" : "out");
   setTimeout(function () { idx = next; render(); }, 330);
 }
 function enterBanner() { revealPhase = 1; content.classList.add("banner"); document.getElementById("dark").classList.add("on"); document.getElementById("stage").classList.add("bannerlift"); }

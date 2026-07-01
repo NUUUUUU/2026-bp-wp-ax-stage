@@ -34,12 +34,8 @@ var CONFIG = {
       { rank: 1, prize: "상금 200만원", ttl: "대상" },
       { rank: 2, prize: "상금 100만원", ttl: "우수상" }
     ],
-    WP: [ { rank: 1, prize: "상금 100만원", ttl: "대상" } ],
-    AX: [
-      { rank: 1, prize: "상금 100만원", ttl: "대상" },
-      { rank: 2, prize: "상금 50만원", ttl: "우수상" },
-      { rank: 3, prize: "상금 50만원", ttl: "우수상" }
-    ]
+    WP: [ { rank: 1, prize: "상금 200만원", ttl: "대상" } ],
+    AX: [ { rank: 1, prize: "상금 100만원", ttl: "대상" } ]
   },
   apiUrl: "PASTE_YOUR_APPS_SCRIPT_URL_HERE",
   judgeUrl: "https://example.invalid/judge.html",
