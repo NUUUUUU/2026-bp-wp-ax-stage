@@ -38,7 +38,7 @@ var CONFIG = {
     AX: [ { rank: 1, prize: "상금 100만원", ttl: "대상" } ]
   },
   apiUrl: "https://script.google.com/macros/s/AKfycbys-XrSmFQu9nY0z5KLZWPSY0Jxq8M-4aOx0t31Ax9LNokE_jtZo2q6rjdTrU7rO1XC/exec",
-  judgeUrl: "https://nuuuuuu.github.io/shinshinsa-dashboard/judge.html",
+  judgeUrl: "https://nuuuuuu.github.io/bp-wp-simsa/judge.html",
   revealOrder: ["WP", "BP", "AX"],
   bgm: { mode: "file", file: "assets/bgm/bgm.m4a", youtubeId: "U34kLXjdw90", volume: 0.5 }
 };
