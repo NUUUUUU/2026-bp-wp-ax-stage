@@ -403,7 +403,7 @@ function sceneHTML(s) {
 function render() {
   var s = SCENES[idx];
   revealPhase = 0;
-  stopReveal();                                            // 리빌 음악: 새 장면으로 넘어가면 정지(현수막까진 유지됨)
+  stopReveal(); stopTeaser();                              // 이전 리빌/티저 음: 새 장면으로 넘어가면 정지(현수막까진 유지)
   if (s.type === "cover") playOpening(); else stopOpening(); // 오프닝 음악: 커버에서만
   content.classList.remove("out", "outb", "banner");
   document.getElementById("dark").classList.remove("on");
@@ -412,7 +412,7 @@ function render() {
   document.getElementById("progress").style.width = (idx / (SCENES.length - 1) * 100) + "%";
   if (s.type === "cover") woven.show(); else woven.hide();
   document.getElementById("cvscrim").classList.toggle("on", s.type === "cover");
-  if (s.type === "teaser") drumroll();
+  if (s.type === "teaser") teaser();
   if (s.type === "reveal") revealCinematic(s);
 }
 
@@ -587,12 +587,15 @@ function playBuf(buf, gain) {
   s.connect(g); g.connect(master); s.start(actx.currentTime + 0.02); return true;
 }
 // 오프닝(커버 화면)·리빌(발표→현수막) 음악 — 스트리밍
-var openingEl = null, revealEl = null, openingFailed = false, revealReady = false;
+var openingEl = null, teaserEl = null, revealEl = null, openingFailed = false, teaserReady = false, revealReady = false;
 function initMedia() {
   try {
-    openingEl = new Audio("assets/sfx/opening.mp3"); openingEl.preload = "auto"; openingEl.volume = 0.55; openingEl.muted = muted;
+    // BGM은 잔잔하게(볼륨 낮춤)
+    openingEl = new Audio("assets/sfx/opening.mp3"); openingEl.preload = "auto"; openingEl.volume = 0.30; openingEl.muted = muted;
     openingEl.addEventListener("error", function () { openingFailed = true; }, { once: true });
-    revealEl = new Audio("assets/sfx/reveal.mp3"); revealEl.preload = "auto"; revealEl.volume = 0.8; revealEl.muted = muted;
+    teaserEl = new Audio("assets/sfx/teaser.mp3"); teaserEl.preload = "auto"; teaserEl.volume = 0.55; teaserEl.muted = muted;
+    teaserEl.addEventListener("canplay", function () { teaserReady = true; }, { once: true });
+    revealEl = new Audio("assets/sfx/reveal.mp3"); revealEl.preload = "auto"; revealEl.volume = 0.5; revealEl.muted = muted;
     revealEl.addEventListener("canplay", function () { revealReady = true; }, { once: true });
   } catch (e) {}
 }
@@ -605,6 +608,10 @@ function stopOpening() { fadeStop(openingEl); }
 // 리빌 음악: 발표 순간 재생, 현수막까지 이어지고 다음 장면(render)에서 정지
 function playReveal(vol) { if (muted || !revealReady || !revealEl) return false; try { revealEl.muted = muted; revealEl.volume = vol; revealEl.currentTime = 0; var p = revealEl.play(); if (p && p.catch) p.catch(function () {}); return true; } catch (e) { return false; } }
 function stopReveal() { if (revealEl) { try { revealEl.pause(); revealEl.currentTime = 0; } catch (e) {} } }
+// 각 상 시작(티저 "…수상자! 누구일까요?") — 시상식 오프닝 sting, 다음 장면(발표)서 정지
+function playTeaser() { if (muted || !teaserReady || !teaserEl) return false; try { teaserEl.muted = muted; teaserEl.currentTime = 0; var p = teaserEl.play(); if (p && p.catch) p.catch(function () {}); return true; } catch (e) { return false; } }
+function stopTeaser() { if (teaserEl) { try { teaserEl.pause(); teaserEl.currentTime = 0; } catch (e) {} } }
+function teaser() { if (muted) return; if (playTeaser()) return; drumroll(); }  // 파일 우선, 없으면 합성 드럼롤
 function noise() {
   var ac = audio(); if (!ac) return null;
   if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
@@ -647,7 +654,7 @@ function chime(rank) {
   if (muted) return;
   try {
     var ac = audio(); if (!ac) return; var t = ac.currentTime + 0.01, big = rank === 1;
-    if (playReveal(big ? 0.85 : 0.7)) return;   // 리빌 음악 있으면 우선(현수막까지 이어짐)
+    if (playReveal(big ? 0.5 : 0.42)) return;   // 리빌 음악(잔잔), 있으면 우선 · 현수막까지 이어짐
     cymbal(t, big ? 0.20 : 0.14, big ? 1.7 : 1.1);
     timpani(t, big ? 98 : 110, big ? 0.5 : 0.38, big ? 0.9 : 0.7);
     fanfare(t + 0.02, big ? 72 : 69, big);
@@ -687,7 +694,7 @@ function toggleMute() {
   muted = !muted;
   var b = document.getElementById("mute"); b.textContent = muted ? "✕" : "♪"; b.style.color = muted ? "#7a6f50" : "#cbbd86";
   if (master && actx) master.gain.setTargetAtTime(muted ? 0 : 0.9, actx.currentTime, 0.02); // 재생 중 소리도 즉시 반영
-  if (openingEl) openingEl.muted = muted; if (revealEl) revealEl.muted = muted;
+  if (openingEl) openingEl.muted = muted; if (teaserEl) teaserEl.muted = muted; if (revealEl) revealEl.muted = muted;
 }
 
 /* ===================== 시작/오디오 언락 ===================== */
