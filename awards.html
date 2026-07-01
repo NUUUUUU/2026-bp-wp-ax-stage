@@ -403,8 +403,11 @@ function sceneHTML(s) {
 function render() {
   var s = SCENES[idx];
   revealPhase = 0;
-  stopReveal(); stopTeaser();                              // 이전 리빌/티저 음: 새 장면으로 넘어가면 정지(현수막까진 유지)
-  if (s.type === "cover") playOpening(); else stopOpening(); // 오프닝 음악: 커버에서만
+  stopReveal();                                            // 리빌 음악: 새 장면 진입 시 정지(현수막은 render 미호출로 유지)
+  if (s.type === "cover") playOpening(); else stopOpening(); // 오프닝: 커버에서만
+  // 각 상 소개 sting: "○○ 부문"(섹션)~"…수상자! 누구?"(티저) 이어짐, 그 외 장면(발표·피날레)선 정지
+  if (s.type === "section" || s.type === "teaser") { if (!playTeaser() && s.type === "teaser") drumroll(); }
+  else stopTeaser();
   content.classList.remove("out", "outb", "banner");
   document.getElementById("dark").classList.remove("on");
   document.getElementById("stage").classList.remove("bannerlift");
@@ -412,7 +415,6 @@ function render() {
   document.getElementById("progress").style.width = (idx / (SCENES.length - 1) * 100) + "%";
   if (s.type === "cover") woven.show(); else woven.hide();
   document.getElementById("cvscrim").classList.toggle("on", s.type === "cover");
-  if (s.type === "teaser") teaser();
   if (s.type === "reveal") revealCinematic(s);
 }
 
@@ -608,10 +610,13 @@ function stopOpening() { fadeStop(openingEl); }
 // 리빌 음악: 발표 순간 재생, 현수막까지 이어지고 다음 장면(render)에서 정지
 function playReveal(vol) { if (muted || !revealReady || !revealEl) return false; try { revealEl.muted = muted; revealEl.volume = vol; revealEl.currentTime = 0; var p = revealEl.play(); if (p && p.catch) p.catch(function () {}); return true; } catch (e) { return false; } }
 function stopReveal() { if (revealEl) { try { revealEl.pause(); revealEl.currentTime = 0; } catch (e) {} } }
-// 각 상 시작(티저 "…수상자! 누구일까요?") — 시상식 오프닝 sting, 다음 장면(발표)서 정지
-function playTeaser() { if (muted || !teaserReady || !teaserEl) return false; try { teaserEl.muted = muted; teaserEl.currentTime = 0; var p = teaserEl.play(); if (p && p.catch) p.catch(function () {}); return true; } catch (e) { return false; } }
+// 각 상 소개 sting — "○○ 부문"(섹션)부터 "…수상자! 누구일까요?"(티저)까지 이어짐, 발표서 정지
+// 이미 재생 중이면 이어가고(재시작 안 함), 아니면 처음부터
+function playTeaser() {
+  if (muted || !teaserReady || !teaserEl) return false;
+  try { if (!teaserEl.paused) return true; teaserEl.muted = muted; teaserEl.currentTime = 0; var p = teaserEl.play(); if (p && p.catch) p.catch(function () {}); return true; } catch (e) { return false; }
+}
 function stopTeaser() { if (teaserEl) { try { teaserEl.pause(); teaserEl.currentTime = 0; } catch (e) {} } }
-function teaser() { if (muted) return; if (playTeaser()) return; drumroll(); }  // 파일 우선, 없으면 합성 드럼롤
 function noise() {
   var ac = audio(); if (!ac) return null;
   if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
