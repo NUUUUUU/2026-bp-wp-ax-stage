@@ -37,8 +37,8 @@ var CONFIG = {
     WP: [ { rank: 1, prize: "상금 200만원", ttl: "대상" } ],
     AX: [ { rank: 1, prize: "상금 100만원", ttl: "대상" } ]
   },
-  apiUrl: "PASTE_YOUR_APPS_SCRIPT_URL_HERE",
-  judgeUrl: "https://example.invalid/judge.html",
+  apiUrl: "https://script.google.com/macros/s/AKfycbys-XrSmFQu9nY0z5KLZWPSY0Jxq8M-4aOx0t31Ax9LNokE_jtZo2q6rjdTrU7rO1XC/exec",
+  judgeUrl: "https://nuuuuuu.github.io/shinshinsa-dashboard/judge.html",
   revealOrder: ["WP", "BP", "AX"],
   bgm: { mode: "file", file: "assets/bgm/bgm.m4a", youtubeId: "U34kLXjdw90", volume: 0.5 }
 };
