@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>심사 결과 관리자 (기획팀)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  /* ===== Airbnb 디자인 토큰 ===== */
+  :root{
+    --rausch:#FF385C; --rausch-dark:#E31C5F; --rausch-soft:#FFF0F3;
+    --ink:#222222; --muted:#717171; --line:#EBEBEB; --line2:#DDDDDD;
+    --bg:#F7F7F7; --card:#FFFFFF; --shadow:0 6px 20px rgba(0,0,0,.08); --shadow-hi:0 10px 34px rgba(0,0,0,.12);
+    --radius:16px;
+    /* 기존 색상 보존 — CEO 섹션·note 컬러 참조용 */
+    --green:#1A7F55; --red:#C00000; --amber:#B8860B;
+    --lighter:#EEF3FB; --light:#D9E2F3;
+    /* 시상 메달 톤 (목업 ceo-awards-airbnb-mockup.html 기준) */
+    --gold:#E0A100; --gold-bg:#FFF7E0; --silver:#8A9099; --silver-bg:#F1F3F5;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;font-family:"Pretendard","맑은 고딕","Malgun Gothic",-apple-system,sans-serif;
+    color:var(--ink);background:var(--bg);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+
+  /* ===== 비밀번호 게이트 ===== */
+  .gate{max-width:380px;margin:80px auto;text-align:center;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:36px 32px 32px;box-shadow:var(--shadow);}
+  .gate .gate-icon{font-size:32px;margin-bottom:8px;}
+  .gate h2{margin:0 0 6px;font-size:20px;font-weight:800;letter-spacing:-.02em;color:var(--ink);border:none;padding:0;}
+  .gate p{font-size:13px;color:var(--muted);margin:0 0 20px;}
+  .gate input{width:100%;padding:13px 14px;border:1.5px solid var(--line2);border-radius:10px;
+    font-size:15px;font-family:inherit;color:var(--ink);outline:none;transition:border-color .15s;margin-bottom:12px;}
+  .gate input:focus{border-color:var(--rausch);}
+  .gate button{width:100%;background:var(--rausch);color:#fff;border:none;padding:14px;
+    border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;font-family:inherit;
+    transition:background .15s;box-shadow:0 4px 14px rgba(255,56,92,.3);}
+  .gate button:hover{background:var(--rausch-dark);}
+  #pwErr{color:var(--red);font-size:12.5px;margin-top:10px;display:none;}
+
+  /* ===== 앱 레이아웃 ===== */
+  #app{display:none;}
+  header{background:var(--card);border-bottom:1px solid var(--line);
+    padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;}
+  header h1{margin:0;font-size:16px;font-weight:800;letter-spacing:-.02em;color:var(--ink);}
+  header .tools{display:flex;gap:8px;}
+  header button{border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;
+    font-family:inherit;font-size:12.5px;transition:all .12s;}
+  .reload{background:var(--bg);color:var(--ink);border:1.5px solid var(--line2)!important;}
+  .reload:hover{border-color:var(--ink)!important;}
+  .reset{background:var(--rausch-soft);color:var(--rausch);border:1.5px solid #ffc5d0!important;}
+  .reset:hover{background:var(--rausch);color:#fff!important;}
+
+  /* ===== 네비 탭 ===== */
+  nav{display:flex;background:var(--card);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:5;padding:0 24px;}
+  nav button{flex:0 0 auto;border:none;background:transparent;padding:14px 18px;
+    font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;
+    border-bottom:2.5px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;}
+  nav button:hover{color:var(--ink);}
+  nav button.active{color:var(--rausch);border-bottom-color:var(--rausch);font-weight:700;}
+
+  /* ===== 콘텐츠 래퍼 ===== */
+  .wrap{max-width:1040px;margin:0 auto;padding:24px 24px 80px;}
+  .page{display:none;} .page.active{display:block;}
+
+  /* ===== 상태 노트 ===== */
+  .note{background:var(--lighter);border-left:4px solid #4A90D9;padding:11px 14px;
+    border-radius:0 8px 8px 0;font-size:12.5px;color:#333;line-height:1.6;margin:10px 0;}
+  .note.warn{background:#FDF3E7;border-left-color:var(--amber);}
+  .note.good{background:#EDF5E7;border-left-color:var(--green);}
+
+  /* ===== 섹션 제목 ===== */
+  h2{font-size:18px;font-weight:800;letter-spacing:-.02em;color:var(--ink);
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin:4px 0 18px;}
+  h3{font-size:14.5px;font-weight:700;color:var(--ink);margin:0 0 14px;}
+
+  /* ===== 카드 ===== */
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:22px 22px 20px;margin-bottom:18px;box-shadow:var(--shadow);}
+
+  /* ===== 카테고리 토글 ===== */
+  .toggle{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+  .toggle button{border:1.5px solid var(--line2);background:var(--card);color:var(--muted);
+    padding:9px 18px;border-radius:999px;font-weight:700;cursor:pointer;font-family:inherit;
+    font-size:13.5px;transition:all .12s;}
+  .toggle button:hover{border-color:var(--rausch);color:var(--rausch);}
+  .toggle button.active{background:var(--rausch);border-color:var(--rausch);color:#fff;
+    box-shadow:0 4px 12px rgba(255,56,92,.3);}
+
+  /* ===== 테이블 ===== */
+  .tblwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line);}
+  table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px;}
+  th,td{border:1px solid var(--line);padding:10px 10px;text-align:center;}
+  th{background:var(--ink);color:#fff;font-weight:700;font-size:12px;letter-spacing:.02em;}
+  th:first-child{border-radius:0;} /* inner border-collapse handles corners */
+  td.crit{text-align:left;font-weight:600;color:var(--ink);background:#FAFAFA;white-space:nowrap;}
+  .rank1{background:#FFF0F3;font-weight:700;}
+  .rank2{background:#F7F7F7;font-weight:600;}
+  .flag-red{color:var(--red);font-weight:700;}
+  .gap-hi{color:var(--red);font-weight:700;}
+
+  /* ===== 상태 배지 / 링크 ===== */
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;}
+  .pill.ok{background:#E4F0DB;color:var(--green);}
+  .pill.chk{background:#FBE3E3;color:var(--red);}
+  .lnk{color:var(--rausch);text-decoration:underline;cursor:pointer;font-size:12.5px;font-weight:700;}
+  .lnk:hover{color:var(--rausch-dark);}
+
+  /* ===== 범례 ===== */
+  .legend{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7;}
+
+  /* ===== CEO 섹션 — 대표이사 보고/시상 쇼케이스 (목업 ceo-awards-airbnb-mockup.html 기준) ===== */
+  /* hero */
+  .hero{background:linear-gradient(135deg,#fff 0%,#FFF6F8 60%,#FFEDF1 100%);
+    border:1px solid var(--line);border-radius:22px;padding:38px 36px 32px;margin-top:4px;box-shadow:var(--shadow);
+    position:relative;overflow:hidden;}
+  .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,56,92,.14),transparent 70%);}
+  .hero .eyebrow{font-size:13px;font-weight:700;color:var(--rausch);letter-spacing:.02em;}
+  .hero h1{margin:8px 0 6px;font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.2;color:var(--ink);}
+  .hero .sub{color:var(--muted);font-size:15px;}
+  .trust{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;position:relative;z-index:1;}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:#3a3a3a;
+    background:#fff;border:1px solid var(--line2);padding:7px 12px;border-radius:999px;}
+  .chip b{color:var(--ink);}
+  .chip .ic{color:var(--green);font-weight:800;}
+
+  /* section header */
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin:34px 4px 16px;}
+  .sec-h h2{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0;border:none;padding:0;}
+  .sec-h .cnt{font-size:13px;color:var(--muted);}
+
+  /* category block */
+  .catblock{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:24px 24px 22px;margin-bottom:22px;}
+  .cat-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+  .cat-title{display:flex;align-items:center;gap:11px;}
+  .cat-k{font-size:12px;font-weight:800;color:#fff;background:var(--ink);padding:5px 11px;border-radius:8px;letter-spacing:.04em;}
+  .cat-name{font-size:17px;font-weight:700;}
+  .cat-meta{font-size:12.5px;color:var(--muted);}
+
+  /* winner cards */
+  .winners{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+  .wcard{position:relative;border-radius:14px;padding:20px 18px;border:1.5px solid var(--line2);background:#fff;
+    transition:transform .15s ease, box-shadow .15s ease;}
+  .wcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-hi);}
+  .wcard.gold{border-color:#F0D27A;background:linear-gradient(180deg,var(--gold-bg),#fff 70%);}
+  .wcard.silver{border-color:#D7DBE0;background:linear-gradient(180deg,var(--silver-bg),#fff 70%);}
+  .medal{font-size:26px;line-height:1;}
+  .wrank{font-size:12.5px;font-weight:800;letter-spacing:.03em;margin-top:8px;}
+  .wcard.gold .wrank{color:var(--gold);} .wcard.silver .wrank{color:var(--silver);}
+  .wteam{font-size:21px;font-weight:800;letter-spacing:-.02em;margin:3px 0 2px;}
+  .wscore{font-size:13px;color:var(--muted);} .wscore b{color:var(--ink);font-size:15px;}
+  .wprize{display:inline-block;margin-top:13px;font-size:13px;font-weight:700;color:var(--rausch);
+    background:var(--rausch-soft);padding:6px 12px;border-radius:999px;}
+
+  /* leaderboard */
+  .lead{margin-top:18px;border-top:1px solid var(--line);padding-top:6px;}
+  .lead .row{display:grid;grid-template-columns:48px 1fr 120px 84px;align-items:center;gap:10px;
+    padding:11px 6px;border-bottom:1px solid var(--line);}
+  .lead .row:last-child{border-bottom:none;}
+  .rk{width:30px;height:30px;border-radius:999px;display:grid;place-items:center;font-weight:800;font-size:13px;
+    background:#F1F1F1;color:#555;}
+  .row.top .rk{background:var(--rausch);color:#fff;}
+  .nm{font-weight:600;font-size:14.5px;}
+  .bar{height:8px;border-radius:999px;background:#EFEFEF;overflow:hidden;}
+  .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FF7A93,var(--rausch));}
+  .val{text-align:right;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;}
+  .val small{display:block;font-weight:500;font-size:10.5px;color:var(--muted);}
+  @media(max-width:560px){.hero h1{font-size:24px;}.lead .row{grid-template-columns:40px 1fr 70px;}.lead .bar{display:none;}}
+
+  /* ===== 모달 ===== */
+  .overlay{display:none;position:fixed;inset:0;background:rgba(20,20,20,.55);z-index:50;
+    align-items:center;justify-content:center;padding:20px;}
+  .overlay.show{display:flex;}
+  .modal{background:var(--card);border-radius:var(--radius);max-width:560px;width:100%;
+    padding:26px 22px;box-shadow:var(--shadow-hi);}
+  .modal .x{float:right;cursor:pointer;color:var(--muted);font-size:20px;border:none;background:none;
+    line-height:1;padding:0;transition:color .12s;}
+  .modal .x:hover{color:var(--ink);}
+
+  @media(max-width:640px){
+    .wrap{padding:16px 14px 60px;}
+    nav{padding:0 12px;}
+    .card{padding:16px 14px;}
+    table{font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="gate-icon">🔐</div>
+  <h2>관리자 확인</h2>
+  <p>기획팀 전용 화면입니다. 비밀번호를 입력하세요.</p>
+  <input type="password" id="pw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')checkPw()">
+  <button onclick="checkPw()">입장</button>
+  <div id="pwErr">비밀번호가 올바르지 않습니다.</div>
+</div>
+
+<div id="app">
+  <header>
+    <h1>심사 결과 — 관리자 (기획팀)</h1>
+    <div class="tools">
+      <button class="reload" onclick="loadData()">⟳ 새로고침</button>
+      <button class="reset" onclick="resetData()">취합 데이터 초기화</button>
+    </div>
+  </header>
+  <nav id="nav">
+    <button class="active" data-p="internal">내부 확인용</button>
+    <button data-p="ceo">대표이사 보고용</button>
+  </nav>
+  <div class="wrap">
+    <div id="status" class="note">데이터를 불러오는 중...</div>
+
+    <section class="page active" id="internal">
+      <h2>결과 — 내부 확인용</h2>
+      <div class="toggle" id="intToggle">
+        <button class="active" data-cat="BP">BP</button><button data-cat="WP">WP</button><button data-cat="AX">AX</button>
+      </div>
+      <div class="card">
+        <h3 id="intTitle">BP — 팀별 최종 점수</h3>
+        <div class="tblwrap"><table id="teamtbl"></table></div>
+        <div id="tieNote"></div>
+        <div class="note">공식 점수는 <b>중앙값</b>입니다. ‘평균−중앙값 차이’가 큰 팀은 일부 위원이 극단점을 몰아준 신호입니다.</div>
+      </div>
+      <div class="card">
+        <h3>심사위원별 채점 패턴 모니터링</h3>
+        <div class="tblwrap"><table id="judgetbl"></table></div>
+        <div class="legend">· 표준편차·극단점 비율이 높을수록 ‘몰아주기’ 가능성(단정하지 않음). · ‘평가 세부내역’에서 실제 채점 내용 확인.</div>
+      </div>
+      <div class="card"><h3>상호 밀어주기 의심 (참고)</h3><div id="reciprocal"></div></div>
+    </section>
+
+    <section class="page" id="ceo">
+      <div class="hero">
+        <div class="eyebrow" id="ceoEyebrow">최종 심사 결과</div>
+        <h1>최종 심사 결과 &amp; 시상</h1>
+        <div class="sub" id="ceoSub">분야별 최종 순위 · 100점 만점</div>
+        <div class="trust">
+          <span class="chip"><span class="ic">✓</span> 집계 <b>중앙값 기반</b></span>
+          <span class="chip"><span class="ic">✓</span> 본인 소속 평가 제외</span>
+          <span class="chip"><span class="ic">✓</span> 동률 시 대표이사 120% 가중</span>
+          <span class="chip"><span class="ic">✓</span> 담합·몰아주기 자동 차단</span>
+        </div>
+      </div>
+      <div class="sec-h"><h2>🏆 시상 결과</h2><span class="cnt">분야별 최종 순위 · 100점 만점</span></div>
+      <div id="ceoReport"></div>
+    </section>
+  </div>
+</div>
+
+<div class="overlay" id="detailModal"><div class="modal"><button class="x" onclick="document.getElementById('detailModal').classList.remove('show')">✕</button><h3 id="detailTitle" style="clear:both">평가 세부내역</h3><div class="tblwrap"><table id="detailTbl"></table></div></div></div>
+
+<script>
+/* ===== 설정: 진본 config.json 에서 주입됨 (직접 수정 금지) ===== */
+var CONFIG = {
+  "event": {
+    "title": "2026 BP · WP · AX 경진대회 심사 평가",
+    "subtitle": "경영기획팀 · 각 항목 1~5점 (가중치 자동 환산)",
+    "greetingTitle": "존경하는 심사위원 여러분께",
+    "greeting": "2026년 BP/WP 평가를 위해 바쁘신 와중에도 귀중한 시간과 노력을 아낌없이 기울여 주신 점 진심으로 감사드립니다. 여러분의 세심한 평가와 고견 덕분에 각 법인의 전략과 성과를 객관적으로 조망하고, 향후 방향성을 더욱 명확히 설정할 수 있었습니다. 앞으로도 많은 관심과 성원을 부탁드리며, 다시 한번 진심으로 감사드립니다.",
+    "sign": "— 경영기획팀 드림",
+    "adminTitle": "심사 결과 — 관리자 (기획팀)"
+  },
+  "apiUrl": "PASTE_YOUR_APPS_SCRIPT_URL_HERE",
+  "teams": [
+    "중국법인",
+    "태국법인",
+    "HQ",
+    "한국사업부",
+    "이집트법인",
+    "기술연구소"
+  ],
+  "pmax": 5,
+  "categories": {
+    "BP": [
+      {
+        "n": "위기 인식 및 대응 전략의 적절성",
+        "w": 20,
+        "d": "비상 상황 인식·원인 분석 / 실행 전략 / 문제·목표의 논리성"
+      },
+      {
+        "n": "성과 및 비용 효과성 (정량 성과)",
+        "w": 20,
+        "d": "원가·고정비 절감, 자산 회수 등 구체 수치 / 실현 가능성"
+      },
+      {
+        "n": "ERP 기반 데이터 검증",
+        "w": 5,
+        "d": "ERP 내 이력추적 / 연동 정보 가시성"
+      },
+      {
+        "n": "실행력 및 추진력",
+        "w": 20,
+        "d": "실행계획 구체성 / 장애 극복 / 리더십·협업"
+      },
+      {
+        "n": "지속가능성 및 확산 가능성",
+        "w": 15,
+        "d": "구조적 개선 / 표준화(SOP)·타부서 전파"
+      },
+      {
+        "n": "창의성 및 돌파력",
+        "w": 20,
+        "d": "한정 조건의 창의적 해결 / 혁신적 전환"
+      }
+    ],
+    "AX": [
+      {
+        "n": "생성형 AI 업무적용",
+        "w": 25,
+        "d": "생성형 AI(ChatGPT·Copilot 등)를 문서·코드·분석 등 실제 업무에 적용한 수준과 성과"
+      },
+      {
+        "n": "지능형 프로세스 자동화",
+        "w": 30,
+        "d": "RPA·AI 에이전트로 반복·정형 업무를 자동화한 범위와 시간·비용 절감 효과 (가점 항목)"
+      },
+      {
+        "n": "데이터 기반 의사결정",
+        "w": 30,
+        "d": "데이터 수집·분석·시각화를 통한 의사결정 개선과 정량적 근거 확보 (가점 항목)"
+      },
+      {
+        "n": "기타 안전분야",
+        "w": 15,
+        "d": "안전·품질·리스크 영역에서의 디지털·AI 적용 및 현장 개선 사례"
+      }
+    ]
+  },
+  "categoryReuse": {
+    "WP": "BP"
+  },
+  "steps": [
+    {
+      "key": "BP",
+      "label": "BP",
+      "sub": "우수사례"
+    },
+    {
+      "key": "WP",
+      "label": "WP",
+      "sub": "개선·반면교사"
+    },
+    {
+      "key": "AX",
+      "label": "AX",
+      "sub": "디지털 전환"
+    }
+  ],
+  "tieRule": {
+    "byDept": "대표이사",
+    "byDeptAlias": "ceo",
+    "multiplier": 1.2
+  },
+  "awards": {
+    "default": [
+      {
+        "rank": 1,
+        "prize": "상금 200만원",
+        "ttl": "대상"
+      },
+      {
+        "rank": 2,
+        "prize": "상금 100만원",
+        "ttl": "우수상"
+      }
+    ],
+    "WP": [
+      {
+        "rank": 1,
+        "prize": "상금 200만원",
+        "ttl": "대상"
+      }
+    ],
+    "AX": [
+      {
+        "rank": 1,
+        "prize": "상금 100만원",
+        "ttl": "대상"
+      }
+    ]
+  },
+  "ceoReportOrder": [
+    "BP",
+    "AX",
+    "WP"
+  ],
+  "anomaly": {
+    "extLow": 35,
+    "extHigh": 90,
+    "sdFlag": 20,
+    "extRatioFlag": 50,
+    "gapHi": 8
+  },
+  "admin": {
+    "password": "1234",
+    "resetKey": "shinshinsa2026"
+  }
+};
+var API_URL   = CONFIG.apiUrl;
+var ADMIN_PW  = CONFIG.admin.password;
+var RESET_KEY = CONFIG.admin.resetKey;
+var TEAMS     = CONFIG.teams;
+var ANOM      = CONFIG.anomaly;
+
+function checkPw(){
+  if(document.getElementById("pw").value===ADMIN_PW){
+    document.getElementById("gate").style.display="none";
+    document.getElementById("app").style.display="block";
+    document.querySelector("header h1").textContent = CONFIG.event.adminTitle;
+    if(CONFIG.event.title) document.getElementById("ceoEyebrow").textContent = CONFIG.event.title;
+    loadData();
+  } else { document.getElementById("pwErr").style.display="block"; }
+}
+
+/* JSONP */
+function jsonp(params){
+  return new Promise(function(res,rej){
+    var cb="cb_"+Date.now()+Math.floor(Math.random()*10000);
+    var s=document.createElement("script");
+    var timer=setTimeout(function(){cleanup();rej("시간 초과");},15000);
+    function cleanup(){clearTimeout(timer);delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);}
+    window[cb]=function(d){cleanup();res(d);};
+    s.onerror=function(){cleanup();rej("네트워크 오류");};
+    s.src=API_URL+"?callback="+cb+"&"+params;
+    document.body.appendChild(s);
+  });
+}
+
+/* 통계 */
+function med(a){a=a.filter(function(x){return x!=null;}).sort(function(x,y){return x-y;});var m=Math.floor(a.length/2);return a.length?(a.length%2?a[m]:(a[m-1]+a[m])/2):0;}
+function mean(a){a=a.filter(function(x){return x!=null;});return a.length?a.reduce(function(s,x){return s+x;},0)/a.length:0;}
+function tmean(a){a=a.filter(function(x){return x!=null;}).sort(function(x,y){return x-y;});if(a.length<=2)return mean(a);return mean(a.slice(1,-1));}
+function std(a){a=a.filter(function(x){return x!=null;});if(!a.length)return 0;var m=mean(a);return Math.sqrt(a.reduce(function(s,x){return s+(x-m)*(x-m);},0)/a.length);}
+
+var DATA={BP:[],WP:[],AX:[]};
+function buildDATA(subs){
+  var D={BP:[],WP:[],AX:[]};
+  subs.forEach(function(sub){
+    ["BP","WP","AX"].forEach(function(cat){
+      var sc=(sub.scores&&sub.scores[cat])||{};
+      var s=TEAMS.map(function(t){ return (sc[t]==null?null:+sc[t]); });
+      D[cat].push({n:sub.name||"(무명)",d:sub.dept||"",s:s});
+    });
+  });
+  return D;
+}
+function wscore(cat,ti){var num=0,den=0,TR=CONFIG.tieRule;DATA[cat].forEach(function(j){var v=j.s[ti];if(v==null)return;var w=(j.d===TR.byDept||j.d===TR.byDeptAlias)?TR.multiplier:1;num+=v*w;den+=w;});return den?num/den:0;}
+function ranking(cat){
+  var rows=TEAMS.map(function(t,i){var col=DATA[cat].map(function(j){return j.s[i];});return {t:t,i:i,med:med(col),mean:mean(col),tm:tmean(col),w:wscore(cat,i)};});
+  rows.sort(function(a,b){return b.med-a.med||b.w-a.w;});
+  return rows;
+}
+
+var intCat="BP";
+function renderInternal(){
+  if(!DATA[intCat].length){ document.getElementById("teamtbl").innerHTML="<tr><td>제출 데이터가 없습니다.</td></tr>"; document.getElementById("judgetbl").innerHTML=""; document.getElementById("tieNote").innerHTML=""; document.getElementById("reciprocal").innerHTML="<div class='note'>제출된 평가가 없습니다.</div>"; return; }
+  var rows=ranking(intCat);
+  document.getElementById("intTitle").textContent=intCat+" — 팀별 최종 점수 (100점 만점)";
+  var th="<tr><th>평가대상</th><th>중앙값<br>(공식)</th><th>평균</th><th>평균<br>(최대·최소 제외)</th><th>평균−중앙값</th><th>순위</th></tr>";
+  rows.forEach(function(x,idx){ var gap=x.mean-x.med, hi=Math.abs(gap)>=ANOM.gapHi;
+    th+="<tr class='"+(idx===0?"rank1":idx===1?"rank2":"")+"'><td class='crit'>"+x.t+"</td><td style='font-weight:700'>"+x.med.toFixed(1)+"</td><td>"+x.mean.toFixed(1)+"</td><td>"+x.tm.toFixed(1)+"</td><td class='"+(hi?"gap-hi":"")+"'>"+(gap>0?"+":"")+gap.toFixed(1)+(hi?" ⚠":"")+"</td><td>"+(idx+1)+"위</td></tr>"; });
+  document.getElementById("teamtbl").innerHTML=th;
+  var medVals=rows.map(function(r){return r.med;}), tieVals=medVals.filter(function(v,i){return medVals.indexOf(v)!==i;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+  var tn="";
+  if(tieVals.length){ tn="<div class='note warn'><b>동률 발생 → 대표이사 점수 120% 가중 적용</b><br>"; tieVals.forEach(function(v){ var g=rows.filter(function(r){return r.med===v;}); tn+="· 중앙값 "+v.toFixed(1)+" 동률: "+g.map(function(r){return r.t+" (가중 "+r.w.toFixed(2)+")";}).join(" vs ")+" → <b>"+g.slice().sort(function(a,b){return b.w-a.w;})[0].t+"</b> 우선<br>"; }); tn+="</div>"; }
+  document.getElementById("tieNote").innerHTML=tn;
+  var jh="<tr><th>심사위원</th><th>소속</th><th>평균</th><th>표준편차</th><th>극단점 비율</th><th>상태</th><th>평가 세부내역</th></tr>";
+  DATA[intCat].forEach(function(j,idx){ var sc=j.s.filter(function(x){return x!=null;}); var ext=sc.length?sc.filter(function(x){return x<ANOM.extLow||x>ANOM.extHigh;}).length/sc.length*100:0; var sd=std(j.s); var chk=(sd>=ANOM.sdFlag||ext>=ANOM.extRatioFlag);
+    jh+="<tr><td class='crit'>"+j.n+"</td><td>"+j.d+"</td><td>"+mean(j.s).toFixed(1)+"</td><td class='"+(chk?"flag-red":"")+"'>"+sd.toFixed(1)+"</td><td class='"+(chk?"flag-red":"")+"'>"+ext.toFixed(0)+"%</td><td><span class='pill "+(chk?"chk":"ok")+"'>"+(chk?"검토 필요":"정상")+"</span></td><td><span class='lnk' onclick='showDetail("+idx+")'>보기</span></td></tr>"; });
+  document.getElementById("judgetbl").innerHTML=jh;
+  var flagged=DATA[intCat].filter(function(j){var sc=j.s.filter(function(x){return x!=null;});return std(j.s)>=ANOM.sdFlag||(sc.length&&sc.filter(function(x){return x<ANOM.extLow||x>ANOM.extHigh;}).length/sc.length>=ANOM.extRatioFlag/100);}).map(function(j){return j.n+"("+j.d+")";});
+  document.getElementById("reciprocal").innerHTML= flagged.length
+    ? "<table><tr><th>의심 위원</th><th>내용</th></tr><tr><td class='crit flag-red'>"+flagged.join(", ")+"</td><td style='text-align:left'>특정 팀에 최고점, 경쟁 팀에 최저점 집중. 상호 밀어주기 패턴 의심 — <b>중앙값 집계로 결과 영향은 차단됨</b></td></tr></table>"
+    : "<div class='note good'>뚜렷한 상호 밀어주기 패턴이 탐지되지 않았습니다.</div>";
+}
+function showDetail(idx){ var j=DATA[intCat][idx]; document.getElementById("detailTitle").textContent="평가 세부내역 — "+j.n+" ("+j.d+") · "+intCat; var h="<tr><th>평가대상</th><th>점수</th></tr>"; TEAMS.forEach(function(t,i){var v=j.s[i];h+="<tr><td class='crit'>"+t+"</td><td>"+(v==null?"<span style='color:#aaa'>평가 제외/미입력</span>":v)+"</td></tr>";}); document.getElementById("detailTbl").innerHTML=h; document.getElementById("detailModal").classList.add("show"); }
+
+/* 시상 위너 카드: CONFIG.awards[cat]||default 의 rank→prize 를 .wcard 로. 1등 gold🥇 / 2등 silver🥈 */
+function award(cat,rows){
+  var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
+  var cards=spec.map(function(a){
+    var r=rows[a.rank-1]; if(!r) return "";
+    var cls=a.rank===1?" gold":a.rank===2?" silver":"";
+    var medal=a.rank===1?"🥇":a.rank===2?"🥈":"🏅";
+    return "<div class='wcard"+cls+"'>"
+      +"<div class='medal'>"+medal+"</div>"
+      +"<div class='wrank'>"+(a.ttl||(a.rank+"등"))+"</div>"
+      +"<div class='wteam'>"+r.t+"</div>"
+      +"<div class='wscore'>최종 <b>"+r.med.toFixed(1)+"</b> <span style='color:#bbb'>/ 100</span></div>"
+      +"<span class='wprize'>"+a.prize+"</span>"
+      +"</div>";
+  }).join("");
+  return "<div class='winners'>"+cards+"</div>";
+}
+/* 시상 요약(메타): "1등 상금 200만원 · 2등 상금 100만원" */
+function awardMeta(cat){
+  var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
+  return spec.map(function(a){return (a.rank+"등 ")+a.prize;}).join(" · ");
+}
+function renderCeo(){
+  var cats={}; CONFIG.steps.forEach(function(s){cats[s.key]={k:s.label,name:s.sub||s.label};}); var html="";
+  CONFIG.ceoReportOrder.forEach(function(cat){
+    var c=cats[cat]||{k:cat,name:cat};
+    var top="<div class='cat-top'><div class='cat-title'><span class='cat-k'>"+c.k+"</span><span class='cat-name'>"+c.name+"</span></div><span class='cat-meta'>"+awardMeta(cat)+"</span></div>";
+    if(!DATA[cat].length){ html+="<div class='catblock'>"+top+"<div class='note'>아직 제출된 평가가 없습니다.</div></div>"; return; }
+    var rows=ranking(cat);
+    html+="<div class='catblock'>"+top;
+    // 위너 카드
+    html+=award(cat,rows);
+    // 동률 배너 (tv 로직 유지 · note 로 재스타일)
+    var mv=rows.map(function(r){return r.med;}), tv=mv.filter(function(v,i){return mv.indexOf(v)!==i;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+    if(tv.length){ html+="<div class='note warn' style='margin-top:16px'><b>동률 발생</b> — 대표이사 점수 120% 가중으로 순위 확정: "+tv.map(function(v){return rows.filter(function(r){return r.med===v;}).slice().sort(function(a,b){return b.w-a.w;}).map(function(r){return r.t;}).join(" > ");}).join(" / ")+"</div>"; }
+    // 리더보드
+    html+="<div class='lead'>";
+    rows.forEach(function(x,i){
+      var w=Math.max(0,Math.min(100,x.med));
+      html+="<div class='row"+(i===0?" top":"")+"'><span class='rk'>"+(i+1)+"</span><span class='nm'>"+x.t+"</span><span class='bar'><i style='width:"+w+"%'></i></span><span class='val'>"+x.med.toFixed(1)+"<small>중앙값</small></span></div>";
+    });
+    html+="</div></div>";
+  });
+  document.getElementById("ceoReport").innerHTML=html;
+}
+
+function loadData(){
+  document.getElementById("status").style.display="block";
+  document.getElementById("status").className="note";
+  document.getElementById("status").innerHTML="데이터를 불러오는 중...";
+  jsonp("action=get").then(function(d){
+    if(!d.ok) throw d.error||"오류";
+    DATA=buildDATA(d.submissions||[]);
+    var n=(d.submissions||[]).length;
+    document.getElementById("status").className="note good";
+    document.getElementById("status").innerHTML="제출 인원: <b>"+n+"명</b> · 최종 갱신 "+new Date().toLocaleString('ko-KR');
+    renderInternal(); renderCeo();
+  }).catch(function(e){
+    document.getElementById("status").className="note warn";
+    document.getElementById("status").innerHTML="데이터를 불러오지 못했습니다 ("+e+"). API 주소 설정 또는 네트워크를 확인하세요.";
+  });
+}
+function resetData(){
+  if(!confirm("⚠ 정말 초기화하시겠습니까?\n\n지금까지 취합된 모든 심사 데이터(BP·WP·AX)가 구글 시트에서 영구 삭제되며 복구할 수 없습니다.")) return;
+  if(!confirm("한 번 더 확인합니다. 정말 모든 제출 데이터를 삭제하시겠습니까?")) return;
+  jsonp("action=reset&key="+encodeURIComponent(RESET_KEY)).then(function(d){
+    if(d.ok){ alert("초기화되었습니다."); loadData(); }
+    else { alert("초기화 실패: "+(d.error||"")); }
+  }).catch(function(e){ alert("초기화 통신 오류: "+e); });
+}
+
+document.querySelectorAll("#nav button").forEach(function(b){ b.addEventListener("click",function(e){
+  document.querySelectorAll("#nav button").forEach(function(x){x.classList.remove("active");});
+  document.querySelectorAll(".page").forEach(function(x){x.classList.remove("active");});
+  e.target.classList.add("active"); document.getElementById(e.target.dataset.p).classList.add("active");
+}); });
+document.querySelectorAll("#intToggle button").forEach(function(b){ b.addEventListener("click",function(e){
+  document.querySelectorAll("#intToggle button").forEach(function(x){x.classList.remove("active");});
+  e.target.classList.add("active"); intCat=e.target.dataset.cat; renderInternal();
+}); });
+</script>
+</body>
+</html>
