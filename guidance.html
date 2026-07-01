@@ -1,4 +1,4 @@
-<!-- 심사위원 안내 무대 슬라이드 — QR·접속주소·입력 4스텝 회전·차분 BGM -->
+<!-- 심사위원 안내 무대 슬라이드 — 시네마틱 갈라 톤(딥블루블랙+골드) · QR·접속주소·입력 4스텝 회전·BGM -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,67 +6,131 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>심사 평가 안내</title>
 <style>
-  :root{ --rausch:#FF385C; --ink:#F4F4F5; --muted:#9aa0a6; --bg:#0E0E12; --card:#17171D; --line:#2A2A33; }
+  /* 로컬 번들 폰트(오프라인·사내망에서도 동일 렌더 — awards 덱과 동일) */
+  @font-face{font-family:"Pretendard";font-weight:900;font-display:block;src:url("assets/fonts/Pretendard-Black.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:700;font-display:block;src:url("assets/fonts/Pretendard-Bold.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:400 500;font-display:block;src:url("assets/fonts/Pretendard-Medium.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:300;font-display:block;src:url("assets/fonts/Pretendard-Light.woff2") format("woff2");}
+  :root{
+    --void:#070A12; --void2:#0B1322;
+    --gold:#E8C977; --gold-soft:#C9B27A; --gold-dim:#7E7048; --ink:#EDE7D2; --muted:#9aa6b8;
+    --serif:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;
+    --sans:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;
+  }
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{height:100%;}
-  body{font-family:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);
-    overflow:hidden;}
-  /* 16:9 무대 캔버스: 1920x1080 기준으로 스케일 */
-  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--void);color:var(--ink);
+    font-family:var(--sans);word-break:keep-all;}
+  /* ===== 배경 레이어(시네마틱 2색온도 조명 — awards와 동일 언어) ===== */
+  #bg{position:fixed;inset:0;width:100%;height:100%;z-index:1;}
+  #spot{position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(125% 85% at 50% 6%, rgba(232,201,119,.22), rgba(160,120,40,.05) 40%, rgba(0,0,0,0) 64%);
+    animation:spotPulse 6.5s ease-in-out infinite;}
+  #rim{position:fixed;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(80% 70% at 6% 104%, rgba(58,110,165,.28), rgba(40,80,130,.06) 42%, rgba(0,0,0,0) 66%);}
+  #vig{position:fixed;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 44%, rgba(0,0,0,0) 52%, rgba(0,0,0,.72) 100%);}
+  @keyframes spotPulse{0%,100%{opacity:.8}50%{opacity:1}}
+  /* ===== 골드 시머/디바이더(핵심 골드 텍스트에만) ===== */
+  .shimmer-gold{background-image:linear-gradient(110deg,#B8862B 0%,#E8C977 16%,#FFFBE9 33%,#F2D88A 46%,#D4AF37 62%,#9A6F1E 100%);
+    background-size:230% 100%;background-position:210% 0;-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:#E8C977;animation:shimmerSweep 3.6s linear infinite;}
+  @keyframes shimmerSweep{0%{background-position:210% 0}100%{background-position:-30% 0}}
+  .g-gold{background:linear-gradient(180deg,#FFF7DD 0%,#F3D88A 32%,#D4AF37 64%,#9A6F1E 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#D4AF37;}
+  .divline{height:2px;width:360px;margin:22px 0;transform-origin:left;
+    background:linear-gradient(90deg,#D4AF37 0%,#FFF0C0 40%,#D4AF37 70%,transparent);}
+  /* ===== 무대 16:9 캔버스(1920x1080 기준 스케일) ===== */
+  #stage{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;}
   #canvas{width:1920px;height:1080px;transform-origin:center center;display:grid;
-    grid-template-columns:780px 1fr;gap:64px;padding:96px 110px;align-content:center;}
+    grid-template-columns:780px 1fr;gap:72px;padding:96px 120px;align-content:center;}
+  /* 접속 카드 */
   .left{display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:var(--card);border:1px solid var(--line);border-radius:28px;padding:56px 48px;}
-  .left .label{font-size:26px;font-weight:700;color:var(--rausch);letter-spacing:.02em;margin-bottom:28px;}
-  #qr{width:440px;height:440px;background:#fff;border-radius:20px;padding:24px;display:flex;align-items:center;justify-content:center;}
+    background:radial-gradient(130% 150% at 50% 0%, #17130b, #0a0e17 72%);
+    border:1px solid rgba(212,175,55,.24);border-radius:26px;padding:56px 48px;
+    box-shadow:0 18px 60px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.02);}
+  .left .label{font-size:22px;font-weight:600;color:var(--gold-soft);letter-spacing:.24em;text-transform:uppercase;
+    margin-bottom:30px;display:flex;align-items:center;gap:10px;}
+  .left .label b{font-weight:700;color:var(--gold);letter-spacing:.02em;text-transform:none;font-size:26px;}
+  #qr{width:452px;height:452px;background:#fff;border-radius:18px;padding:24px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 0 3px rgba(212,175,55,.42), 0 0 46px rgba(212,175,55,.18);}
   #qr svg{width:100%;height:100%;}
-  .url{margin-top:30px;font-size:30px;font-weight:700;word-break:break-all;text-align:center;color:#fff;}
-  .url small{display:block;font-size:20px;color:var(--muted);font-weight:500;margin-top:8px;}
+  .url{margin-top:32px;font-size:30px;font-weight:700;word-break:break-all;text-align:center;color:#F0DDA4;letter-spacing:.01em;}
+  .url small{display:block;font-size:19px;color:var(--muted);font-weight:500;margin-top:10px;letter-spacing:0;}
+  /* 우측 안내 */
   .right{display:flex;flex-direction:column;justify-content:center;}
-  .htitle{font-size:30px;color:var(--muted);font-weight:600;}
-  .h1{font-size:72px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:10px 0 12px;}
-  .h1 b{color:var(--rausch);}
-  .recusal{display:inline-flex;align-items:center;gap:10px;font-size:24px;font-weight:600;color:#cfe9d8;
-    background:rgba(26,127,85,.18);border:1px solid rgba(26,127,85,.5);padding:14px 22px;border-radius:999px;margin-top:8px;}
-  .steps{margin-top:46px;display:flex;flex-direction:column;gap:18px;}
-  .step{display:flex;align-items:center;gap:26px;padding:26px 30px;border-radius:20px;border:1px solid var(--line);
-    background:#121218;opacity:.35;transition:opacity .4s, transform .4s, border-color .4s;}
-  .step.on{opacity:1;border-color:var(--rausch);transform:translateX(8px);background:#1b1b22;}
-  .step .no{flex:0 0 auto;width:62px;height:62px;border-radius:16px;display:grid;place-items:center;
-    font-size:30px;font-weight:800;background:#000;color:var(--rausch);border:1.5px solid var(--line);}
-  .step.on .no{background:var(--rausch);color:#fff;border-color:var(--rausch);}
-  .step .tx{font-size:34px;font-weight:700;}
-  .step .tx small{display:block;font-size:22px;color:var(--muted);font-weight:500;margin-top:4px;}
-  .hint{position:fixed;bottom:26px;left:0;right:0;text-align:center;color:var(--muted);font-size:18px;opacity:.7;}
-  #start{position:fixed;inset:0;background:#0E0E12;display:flex;align-items:center;justify-content:center;
-    flex-direction:column;gap:20px;cursor:pointer;z-index:20;}
-  #start h2{font-size:48px;font-weight:800;} #start p{font-size:24px;color:var(--muted);}
-  .blackout{position:fixed;inset:0;background:#000;z-index:30;display:none;}
-  .blackout.on{display:block;}
+  .eyebrow{font-size:24px;font-weight:600;color:var(--gold-soft);letter-spacing:.42em;text-transform:uppercase;}
+  .h1{font-family:var(--serif);font-size:78px;font-weight:900;letter-spacing:-.02em;line-height:1.08;margin:14px 0 4px;}
+  .recusal{display:inline-flex;align-items:center;gap:12px;font-size:23px;font-weight:500;color:#e7dcc0;
+    background:linear-gradient(180deg,rgba(212,175,55,.12),rgba(212,175,55,.03));
+    border:1px solid rgba(212,175,55,.45);padding:15px 24px;border-radius:999px;margin-top:20px;width:fit-content;}
+  .recusal .ck{color:var(--gold);font-weight:900;}
+  .steps{margin-top:44px;display:flex;flex-direction:column;gap:16px;}
+  .step{display:flex;align-items:center;gap:26px;padding:24px 30px;border-radius:18px;
+    border:1px solid rgba(212,175,55,.14);background:rgba(255,255,255,.02);opacity:.4;
+    transition:opacity .45s, transform .45s, border-color .45s, background .45s, box-shadow .45s;}
+  .step.on{opacity:1;border-color:rgba(212,175,55,.5);transform:translateX(10px);
+    background:linear-gradient(90deg,rgba(212,175,55,.12),rgba(212,175,55,.02));
+    box-shadow:0 10px 34px rgba(212,175,55,.14);}
+  .step .no{flex:0 0 auto;width:60px;height:60px;border-radius:15px;display:grid;place-items:center;
+    font-family:var(--serif);font-size:29px;font-weight:900;background:#0d1018;color:var(--gold-dim);
+    border:1.5px solid rgba(212,175,55,.2);transition:.45s;}
+  .step.on .no{background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);color:#2a1c06;border-color:transparent;
+    box-shadow:0 0 20px rgba(212,175,55,.45);}
+  .step .tx{font-size:33px;font-weight:700;color:var(--ink);}
+  .step.on .tx{color:#fff;}
+  .step .tx small{display:block;font-size:21px;color:var(--muted);font-weight:500;margin-top:5px;}
+  /* ===== HUD ===== */
+  #topline{position:fixed;z-index:7;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,#d4af37 22%,#fff0c0 50%,#d4af37 78%,transparent);opacity:.7;}
+  #brand{position:fixed;z-index:7;top:18px;left:24px;color:#7e7048;font-size:13px;letter-spacing:.34em;font-weight:500;}
+  #ctrls{position:fixed;z-index:7;top:15px;right:18px;display:flex;gap:8px;}
+  #ctrls button{background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.3);color:#cbbd86;border-radius:8px;
+    width:38px;height:38px;cursor:pointer;font-size:15px;font-family:inherit;}
+  #ctrls button:hover{background:rgba(212,175,55,.16);}
+  #hint{position:fixed;z-index:7;bottom:18px;left:0;right:0;text-align:center;color:#6b6450;font-size:12.5px;letter-spacing:.1em;transition:opacity .5s;}
+  /* ===== 시작 게이트 ===== */
+  #start{position:fixed;inset:0;z-index:8;background:var(--void);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2.4vh;cursor:pointer;text-align:center;padding:0 6vw;}
+  #start .gicon{font-size:clamp(40px,6vw,72px);}
+  #start h2{font-family:var(--serif);font-weight:900;font-size:clamp(34px,5.6vw,72px);}
+  #start p{color:var(--gold-soft);font-size:clamp(14px,1.8vw,22px);letter-spacing:.06em;}
+  #blackout{position:fixed;inset:0;z-index:9;background:#000;display:none;} #blackout.on{display:block;}
 </style>
 </head>
 <body>
-<div id="start"><h2>심사 평가 안내</h2><p>화면을 클릭하거나 Space를 눌러 시작</p></div>
+<canvas id="bg"></canvas>
+<div id="spot"></div>
+<div id="rim"></div>
+<div id="vig"></div>
+<div id="topline"></div>
+<div id="brand">SHINSHIN GROUP · 2026</div>
+<div id="ctrls"><button id="mute" title="음소거">♪</button><button id="fs" title="전체화면">⛶</button></div>
+
 <div id="stage"><div id="canvas">
   <div class="left">
-    <div class="label">📱 심사 평가 페이지 접속</div>
+    <div class="label"><span>📱</span><b>심사 평가 페이지 접속</b></div>
     <div id="qr"></div>
     <div class="url" id="url"></div>
   </div>
   <div class="right">
-    <div class="htitle">지금부터</div>
-    <div class="h1"><b>심사 평가</b> 시간입니다</div>
-    <div class="recusal">✓ 본인 소속 팀은 자동으로 평가 대상에서 제외됩니다</div>
+    <div class="eyebrow">지 금 부 터</div>
+    <div class="divline"></div>
+    <div class="h1"><span class="shimmer-gold">심사 평가</span> 시간입니다</div>
+    <div class="recusal"><span class="ck">✓</span> 본인 소속 팀은 자동으로 평가 대상에서 제외됩니다</div>
     <div class="steps" id="steps"></div>
   </div>
 </div></div>
-<div class="hint">→ / Space 다음 · ← 이전 · F 전체화면 · B 블랙아웃</div>
-<div class="blackout" id="blackout"></div>
+
+<div id="hint">→ / Space 다음 · ← 이전 · F 전체화면 · B 블랙아웃 · M 음소거</div>
+<div id="start"><div class="gicon">⚖️</div><h2 class="g-gold">심사 평가 안내</h2><p>화면을 클릭하거나 Space를 눌러 시작</p></div>
+<div id="blackout"></div>
 <audio id="bgm" loop></audio>
 
 <script src="config.js"></script>
 <script src="vendor/qrcode.js"></script>
 <script>
+// 운영 콘솔(admin.html)에서 저장한 judgeUrl이 있으면 우선 사용
+try { var _j = localStorage.getItem("stage.judgeUrl"); if (_j) CONFIG.judgeUrl = _j; } catch (e) {}
 // 입력 4스텝 정의(judge 흐름을 본뜬 미니어처 텍스트)
 var STEPS = [
   { no: "1", t: "평가 분야 선택", s: "BP · WP · AX 중 현재 발표 분야" },
@@ -107,29 +171,80 @@ function showStep(i) {
 var timer = null;
 function autorotate() { clearInterval(timer); timer = setInterval(function () { showStep(cur + 1); }, 3500); }
 
-// 시작 게이트(BGM 자동재생 정책 대응)
-var started = false;
+// 시작 게이트(BGM 자동재생 정책 대응) — 추출 BGM은 안내 덱 전용
+var started = false, muted = false;
 function start() {
   if (started) return; started = true;
   document.getElementById("start").style.display = "none";
   var bgm = document.getElementById("bgm");
   if (CONFIG.bgm && CONFIG.bgm.mode === "file") {
     bgm.src = CONFIG.bgm.file; bgm.volume = CONFIG.bgm.volume != null ? CONFIG.bgm.volume : 0.5;
-    bgm.play().catch(function () {});
+    bgm.muted = muted; bgm.play().catch(function () {});
   }
   showStep(0); autorotate();
 }
 document.getElementById("start").addEventListener("click", start);
 
+function toggleMute() {
+  muted = !muted;
+  var b = document.getElementById("mute"); b.textContent = muted ? "✕" : "♪"; b.style.color = muted ? "#7a6f50" : "#cbbd86";
+  var bgm = document.getElementById("bgm"); if (bgm) bgm.muted = muted;
+}
+function toggleFs() { if (!document.fullscreenElement) { if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen(); } else if (document.exitFullscreen) document.exitFullscreen(); }
+
 // 제어키
 var blackout = document.getElementById("blackout");
 document.addEventListener("keydown", function (e) {
+  var k = e.key.toLowerCase();
   if (e.key === " " || e.key === "ArrowRight") { e.preventDefault(); if (!started) { start(); return; } showStep(cur + 1); autorotate(); }
   else if (e.key === "ArrowLeft") { showStep(cur - 1); autorotate(); }
-  else if (e.key.toLowerCase() === "f") { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
-  else if (e.key.toLowerCase() === "b") { blackout.classList.toggle("on"); }
+  else if (k === "f") { toggleFs(); }
+  else if (k === "b") { blackout.classList.toggle("on"); }
+  else if (k === "m") { toggleMute(); }
 });
 document.getElementById("stage").addEventListener("click", function () { if (started) { showStep(cur + 1); autorotate(); } });
+document.getElementById("fs").addEventListener("click", function (e) { e.stopPropagation(); toggleFs(); });
+document.getElementById("mute").addEventListener("click", function (e) { e.stopPropagation(); toggleMute(); });
+
+/* ===================== 골드 파티클 배경(awards 덱과 동일 언어) ===================== */
+var bg = document.getElementById("bg"), bx = bg.getContext("2d"), pw, ph, parts = [];
+function sizeBg() { pw = bg.width = innerWidth; ph = bg.height = innerHeight; }
+function initParts() {
+  parts = []; var n = Math.round(innerWidth / 15);
+  for (var i = 0; i < n; i++) parts.push({ x: Math.random() * pw, y: Math.random() * ph, r: Math.random() * 2.4 + .5,
+    s: Math.random() * .34 + .1, tw: Math.random() * Math.PI * 2, tws: Math.random() * .035 + .008, em: Math.random() < .07 });
+}
+function drawBg() {
+  bx.clearRect(0, 0, pw, ph);
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i]; p.y -= p.s; p.tw += p.tws; if (p.y < -6) { p.y = ph + 6; p.x = Math.random() * pw; }
+    var a = .28 + Math.sin(p.tw) * .28; var rr = p.em ? p.r * 1.8 : p.r;
+    if (p.em) { bx.shadowBlur = 12; bx.shadowColor = "rgba(255,214,120,.9)"; } else { bx.shadowBlur = 0; }
+    bx.beginPath(); bx.arc(p.x, p.y, rr, 0, 7);
+    bx.fillStyle = "rgba(255," + (208 + (Math.sin(p.tw) * 22 | 0)) + ",120," + a.toFixed(2) + ")"; bx.fill();
+  }
+  bx.shadowBlur = 0;
+  requestAnimationFrame(drawBg);
+}
+
+// 힌트 자동 숨김
+var hideT, hint = document.getElementById("hint");
+function pokeHint() { hint.style.opacity = "1"; clearTimeout(hideT); hideT = setTimeout(function () { hint.style.opacity = "0"; }, 3000); }
+addEventListener("mousemove", pokeHint);
+addEventListener("resize", function () { sizeBg(); initParts(); });
+sizeBg(); initParts(); drawBg(); pokeHint();
+
+/* 스크린샷/리허설용 자동 진행: ?auto&step=N (운영 동작엔 영향 없음) */
+(function maybeAuto() {
+  var sp = new URLSearchParams(location.search);
+  if (!sp.has("auto")) return;
+  start();
+  if (sp.has("step")) {
+    var n = parseInt(sp.get("step") || "0", 10) || 0;
+    clearInterval(timer);           // 결정적 캡처: 자동회전 정지
+    showStep(Math.max(0, Math.min(n, stepNodes.length - 1)));
+  }
+})();
 </script>
 </body>
 </html>
