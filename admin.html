@@ -1,0 +1,322 @@
+<!-- 행사 운영 허브 — 무대 송출(심사위원 안내·시상 발표) 실행 + judgeUrl·apiUrl 설정·연결 테스트 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>무대 운영 콘솔 · 2026 경진대회</title>
+<style>
+  @font-face{font-family:"Pretendard";font-weight:900;font-display:block;src:url("assets/fonts/Pretendard-Black.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:700;font-display:block;src:url("assets/fonts/Pretendard-Bold.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:400 500;font-display:block;src:url("assets/fonts/Pretendard-Medium.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:300;font-display:block;src:url("assets/fonts/Pretendard-Light.woff2") format("woff2");}
+  :root{
+    --void:#070A12; --void2:#0B1322; --panel:#0e1524;
+    --gold:#E8C977; --gold-soft:#C9B27A; --gold-dim:#7E7048; --ink:#EDE7D2; --muted:#9aa6b8;
+    --ok:#7fd6a3; --sans:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{min-height:100%;background:var(--void);color:var(--ink);font-family:var(--sans);word-break:keep-all;}
+  body{position:relative;padding:56px 24px 72px;overflow-x:hidden;}
+  #spot{position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 70% at 50% 0%, rgba(232,201,119,.16), rgba(160,120,40,.04) 42%, rgba(0,0,0,0) 66%);}
+  #rim{position:fixed;inset:0;z-index:0;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(70% 60% at 4% 100%, rgba(58,110,165,.22), rgba(0,0,0,0) 60%);}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;}
+  /* 헤더 */
+  .brand{color:#7e7048;font-size:13px;letter-spacing:.34em;font-weight:500;}
+  h1{font-weight:900;font-size:clamp(30px,4.4vw,52px);letter-spacing:-.02em;margin:8px 0 6px;}
+  .g-gold{background:linear-gradient(180deg,#FFF7DD 0%,#F3D88A 32%,#D4AF37 64%,#9A6F1E 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#D4AF37;}
+  .sub{color:var(--muted);font-size:clamp(14px,1.6vw,18px);}
+  .divline{height:2px;width:100%;margin:26px 0;
+    background:linear-gradient(90deg,#D4AF37,rgba(212,175,55,.15) 40%,transparent);}
+  h2{font-size:15px;font-weight:700;letter-spacing:.24em;color:var(--gold-soft);text-transform:uppercase;margin:34px 0 16px;}
+  /* 실행 카드 */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
+  .card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:inherit;
+    background:radial-gradient(130% 140% at 50% 0%, #141a2a, #0a0e17 78%);
+    border:1px solid rgba(212,175,55,.22);border-radius:20px;padding:26px 24px;
+    box-shadow:0 14px 46px rgba(0,0,0,.45);transition:transform .18s, border-color .18s, box-shadow .18s;}
+  .card:hover{transform:translateY(-4px);border-color:rgba(212,175,55,.6);box-shadow:0 20px 60px rgba(212,175,55,.14);}
+  .card .ic{font-size:38px;}
+  .card .t{font-size:24px;font-weight:900;}
+  .card .d{font-size:15px;color:var(--muted);line-height:1.5;flex:1;}
+  .card .go{align-self:flex-start;font-weight:700;font-size:15px;color:#f4e3a8;
+    border:1.5px solid rgba(212,175,55,.5);border-radius:10px;padding:9px 18px;
+    background:linear-gradient(180deg,rgba(212,175,55,.14),rgba(212,175,55,.04));}
+  .card.demo{border-color:rgba(120,140,170,.28);}
+  .card.demo .go{color:#cdd6e2;border-color:rgba(160,180,210,.4);background:rgba(255,255,255,.03);}
+  /* 설정 패널 */
+  .panel{background:var(--panel);border:1px solid rgba(212,175,55,.16);border-radius:20px;padding:28px 26px;
+    box-shadow:0 14px 46px rgba(0,0,0,.4);}
+  .field{margin-bottom:22px;}
+  .field:last-child{margin-bottom:0;}
+  .field label{display:block;font-size:15px;font-weight:700;margin-bottom:6px;}
+  .field .hint{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
+  .field input{width:100%;background:#070b13;border:1px solid rgba(212,175,55,.28);border-radius:12px;
+    color:var(--ink);font-family:inherit;font-size:16px;padding:14px 16px;outline:none;transition:border-color .18s;}
+  .field input:focus{border-color:var(--gold);}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+  button{font-family:inherit;cursor:pointer;border-radius:11px;font-weight:700;font-size:15px;padding:12px 22px;border:1px solid transparent;}
+  .btn-gold{color:#2a1c06;background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);}
+  .btn-gold:hover{filter:brightness(1.06);}
+  .btn-ghost{color:#cbbd86;background:rgba(255,255,255,.04);border-color:rgba(212,175,55,.3);}
+  .btn-ghost:hover{background:rgba(212,175,55,.14);}
+  .status{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px;}
+  .chip{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;padding:8px 15px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);color:var(--muted);background:rgba(255,255,255,.02);}
+  .chip.on{color:var(--ok);border-color:rgba(127,214,163,.4);background:rgba(127,214,163,.08);}
+  .chip .dot{width:9px;height:9px;border-radius:50%;background:currentColor;opacity:.85;}
+  .msg{font-size:14px;color:var(--muted);min-height:20px;margin-top:4px;}
+  .msg.ok{color:var(--ok);} .msg.err{color:#f0a0a0;}
+  .note{font-size:13px;color:var(--muted);line-height:1.7;margin-top:14px;}
+  .note b{color:var(--gold-soft);font-weight:600;}
+  code{background:rgba(255,255,255,.06);padding:2px 7px;border-radius:6px;font-size:13px;color:#e7dcc0;}
+  .keys{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+  .keys span{font-size:13px;color:var(--muted);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:6px 11px;}
+  .keys b{color:var(--ink);font-weight:700;}
+  /* 수상자 확정 슬롯 */
+  .slots{display:flex;flex-direction:column;gap:16px;margin:18px 0 8px;}
+  .cat-block{border:1px solid rgba(212,175,55,.14);border-radius:14px;padding:16px 18px;background:rgba(255,255,255,.02);}
+  .cat-h{font-weight:900;font-size:18px;margin-bottom:12px;}
+  .cat-h b{color:var(--gold);}
+  .cat-h span{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.14em;margin-left:8px;text-transform:uppercase;}
+  .slot{display:grid;grid-template-columns:84px 1fr auto;align-items:center;gap:14px;padding:10px 0;}
+  .slot + .slot{border-top:1px solid rgba(255,255,255,.05);}
+  .slot-rank{font-size:13px;font-weight:700;padding:6px 0;border-radius:999px;text-align:center;white-space:nowrap;}
+  .slot-rank.g{color:#2a1c06;background:linear-gradient(160deg,#fbeeb4,#e6c659);}
+  .slot-rank.s{color:#1a2230;background:linear-gradient(160deg,#fff,#cdd6e2);}
+  .slot select{width:100%;background:#070b13;border:1px solid rgba(212,175,55,.28);border-radius:10px;color:var(--ink);
+    font-family:inherit;font-size:15px;padding:11px 13px;outline:none;cursor:pointer;}
+  .slot select:focus{border-color:var(--gold);}
+  .slot-prize{font-size:14px;font-weight:700;color:#f4e3a8;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div id="spot"></div>
+<div id="rim"></div>
+<div class="wrap">
+  <div class="brand">SHINSHIN GROUP · 2026</div>
+  <h1><span class="g-gold">무대 운영 콘솔</span></h1>
+  <div class="sub" id="evt">2026 BP · WP · AX 경진대회</div>
+  <div class="divline"></div>
+
+  <h2>무대 송출 실행</h2>
+  <div class="cards">
+    <a class="card" href="guidance.html" target="_blank" rel="noopener">
+      <div class="ic">⚖️</div>
+      <div class="t">심사위원 안내</div>
+      <div class="d">평가 시간 송출 — 접속 QR · 접속주소 · 입력 4스텝 안내 · 차분한 BGM. 심사위원이 채점하는 동안 무대에 띄웁니다.</div>
+      <span class="go">안내 화면 열기 ↗</span>
+    </a>
+    <a class="card" href="awards.html" target="_blank" rel="noopener">
+      <div class="ic">🏆</div>
+      <div class="t">시상 발표 (라이브)</div>
+      <div class="d">실제 집계 결과로 WP → BP → AX, 우수상 → 대상 시네마틱 리빌. 심사 종료 후 <b>apiUrl 설정</b> 상태에서 사용합니다.</div>
+      <span class="go">시상 발표 열기 ↗</span>
+    </a>
+    <a class="card demo" href="awards.html?demo=1" target="_blank" rel="noopener">
+      <div class="ic">🎬</div>
+      <div class="t">시상 발표 (데모 리허설)</div>
+      <div class="d">합성 데이터로 전체 리빌 흐름을 점검합니다. 네트워크·집계 설정과 무관하게 언제든 리허설 가능.</div>
+      <span class="go">데모 실행 ↗</span>
+    </a>
+  </div>
+
+  <h2>설정 · 두 값을 넣으면 위 화면들이 바로 동작합니다</h2>
+  <div class="panel">
+    <div class="field">
+      <label for="judge">심사 평가 페이지 주소 (judgeUrl)</label>
+      <div class="hint">안내 화면 QR이 가리키는 심사위원 입력 페이지. GitHub Pages 등 공개 배포 주소.</div>
+      <input id="judge" type="url" placeholder="https://your-org.github.io/…/judge.html" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="api">시상 라이브 집계 주소 (apiUrl)</label>
+      <div class="hint">Apps Script 웹앱 <code>/exec</code> 주소. 시상 발표(라이브)가 실제 제출을 집계해 승자를 채웁니다.</div>
+      <input id="api" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" spellcheck="false">
+      <div class="row">
+        <button class="btn-ghost" id="test">라이브 연결 테스트</button>
+        <span class="msg" id="testMsg"></span>
+      </div>
+    </div>
+    <div class="row">
+      <button class="btn-gold" id="save">저장</button>
+      <button class="btn-ghost" id="clear">초기화</button>
+      <span class="msg" id="saveMsg"></span>
+    </div>
+    <div class="status">
+      <span class="chip" id="cJudge"><span class="dot"></span>안내 QR 미설정</span>
+      <span class="chip" id="cApi"><span class="dot"></span>시상 라이브 미설정</span>
+    </div>
+    <div class="note">
+      저장값은 이 브라우저에 보관되며 <b>안내·시상 화면이 자동으로 읽습니다</b>(config.js를 직접 고칠 필요 없음).
+      단, 콘솔과 무대 화면을 <b>같은 방식으로 열어야</b> 값이 공유됩니다 — 폴더에서 <code>npx serve .</code> 후
+      <code>http://localhost:3000/admin.html</code> 로 접속하는 것을 권장합니다.
+    </div>
+  </div>
+
+  <h2>수상자 확정 · 접수 집계 → (대표님 지시 반영) → 확정 → 시상 송출</h2>
+  <div class="panel">
+    <div class="row">
+      <button class="btn-ghost" id="load">접수 점수 불러오기</button>
+      <span class="msg" id="loadMsg"></span>
+    </div>
+    <div id="slots" class="slots"></div>
+    <div class="row" id="confirmRow" style="display:none">
+      <button class="btn-gold" id="confirm">확정 &amp; 시상 발표로 푸시</button>
+      <button class="btn-ghost" id="unconfirm">확정 해제</button>
+      <span class="msg" id="confirmMsg"></span>
+    </div>
+    <div class="note">
+      부문별 순위는 접수 점수의 <b>중앙값</b>으로 자동 계산된다. 각 시상 슬롯(대상·우수상)의 팀을 <b>대표님 지시에 따라 드롭다운으로 교체</b>한 뒤
+      <b>확정</b>하면, 이 명단이 이 브라우저에 저장되고 <b>시상 발표(라이브)</b>가 자동 집계 대신 <b>확정본</b>을 그대로 송출한다(옆 점수는 해당 팀의 실제 중앙값).
+      리허설만 할 땐 <b>시상 발표(데모)</b> 카드를 쓰면 확정본과 무관하게 동작한다. 확정 후 이미 열려 있는 시상 화면은 <b>R</b>로 새로고침.
+    </div>
+  </div>
+
+  <h2>무대 제어키</h2>
+  <div class="keys">
+    <span><b>Space / →</b> 다음</span><span><b>←</b> 이전</span><span><b>F</b> 전체화면</span>
+    <span><b>B</b> 블랙아웃</span><span><b>M</b> 음소거</span><span><b>R</b> 시상 결과 새로고침</span>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="logic.js"></script>
+<script>
+var KJ = "stage.judgeUrl", KA = "stage.apiUrl", KC = "stage.confirmedWinners";
+function lget(k){ try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function lset(k,v){ try { if (v) localStorage.setItem(k,v); else localStorage.removeItem(k); } catch (e) {} }
+function realJudge(u){ return /^https?:\/\//.test(u||"") && (u||"").indexOf("example.invalid") === -1; }
+function realApi(u){ return /^https?:\/\//.test(u||"") && (u||"").indexOf("PASTE_YOUR") === -1; }
+
+var jIn = document.getElementById("judge"), aIn = document.getElementById("api");
+document.getElementById("evt").textContent = (CONFIG.event && CONFIG.event.title) || "2026 경진대회";
+
+// 프리필: 저장값 우선, 없으면 config.js의 실제값(placeholder는 비움)
+(function prefill(){
+  jIn.value = lget(KJ) || (realJudge(CONFIG.judgeUrl) ? CONFIG.judgeUrl : "");
+  aIn.value = lget(KA) || (realApi(CONFIG.apiUrl) ? CONFIG.apiUrl : "");
+  refreshStatus();
+})();
+
+function refreshStatus(){
+  var j = jIn.value.trim(), a = aIn.value.trim();
+  var cj = document.getElementById("cJudge"), ca = document.getElementById("cApi");
+  cj.classList.toggle("on", realJudge(j)); cj.lastChild.textContent = realJudge(j) ? "안내 QR 설정됨" : "안내 QR 미설정";
+  ca.classList.toggle("on", realApi(a)); ca.lastChild.textContent = realApi(a) ? "시상 라이브 설정됨" : "시상 라이브 미설정";
+}
+jIn.addEventListener("input", refreshStatus);
+aIn.addEventListener("input", refreshStatus);
+
+document.getElementById("save").addEventListener("click", function(){
+  lset(KJ, jIn.value.trim()); lset(KA, aIn.value.trim());
+  var m = document.getElementById("saveMsg"); m.className = "msg ok"; m.textContent = "저장됨 · 안내/시상 화면을 새로 열면 반영됩니다.";
+  refreshStatus();
+});
+document.getElementById("clear").addEventListener("click", function(){
+  lset(KJ, ""); lset(KA, ""); jIn.value = ""; aIn.value = "";
+  var m = document.getElementById("saveMsg"); m.className = "msg"; m.textContent = "초기화됨 (config.js 기본값 사용).";
+  refreshStatus();
+});
+
+// 라이브 연결 테스트 — 입력한 apiUrl로 JSONP action=get 시도
+function jsonp(url, params){
+  return new Promise(function(res, rej){
+    var cb = "cbadm_" + Date.now() + Math.floor(Math.random()*10000);
+    var sc = document.createElement("script");
+    var t = setTimeout(function(){ cleanup(); rej("시간 초과(15초)"); }, 15000);
+    function cleanup(){ clearTimeout(t); delete window[cb]; if (sc.parentNode) sc.parentNode.removeChild(sc); }
+    window[cb] = function(d){ cleanup(); res(d); };
+    sc.onerror = function(){ cleanup(); rej("네트워크 오류 / 주소 확인"); };
+    sc.src = url + (url.indexOf("?") === -1 ? "?" : "&") + "callback=" + cb + "&" + params;
+    document.body.appendChild(sc);
+  });
+}
+document.getElementById("test").addEventListener("click", function(){
+  var a = aIn.value.trim(), m = document.getElementById("testMsg");
+  if (!realApi(a)) { m.className = "msg err"; m.textContent = "먼저 유효한 apiUrl(https://…/exec)을 입력하세요."; return; }
+  m.className = "msg"; m.textContent = "연결 확인 중…";
+  jsonp(a, "action=get").then(function(d){
+    if (d && d.ok) { var n = (d.submissions || []).length; m.className = "msg ok"; m.textContent = "연결 성공 · 제출 " + n + "건 수신."; }
+    else { m.className = "msg err"; m.textContent = "응답 오류: " + ((d && d.error) || "형식 불일치"); }
+  }).catch(function(e){ m.className = "msg err"; m.textContent = "연결 실패: " + e; });
+});
+
+/* ===== 수상자 확정 워크플로우 (접수 집계 → CEO 조정 → 확정 → 시상 송출) ===== */
+var CATMETA = { BP: "Best Practice", WP: "Worst Practice", AX: "Digital Transformation" };
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
+function readConfirmed(){ try{ var r=localStorage.getItem(KC); if(!r) return null; var p=JSON.parse(r); return (p&&p.winners)?p:null; }catch(e){ return null; } }
+function catList(){ return (typeof SCORING!=="undefined") ? SCORING.revealCats(CONFIG) : (CONFIG.revealOrder||["WP","BP","AX"]); }
+function fmtTime(ts){ try{ var d=new Date(ts); function p(n){return (n<10?"0":"")+n;} return p(d.getHours())+":"+p(d.getMinutes()); }catch(e){ return ""; } }
+
+var rankCache = {}, dupArmed = false;
+// apiUrl 미설정 시 리허설용 합성 제출(awards 데모와 동일 성향)
+function synthSubs(){ var subs=[]; for(var i=0;i<3;i++){ var sc={BP:{},WP:{},AX:{}}; CONFIG.teams.forEach(function(t,idx){ ["BP","WP","AX"].forEach(function(c){ sc[c][t]=92-idx*6-(c==="AX"?idx:0); }); }); subs.push({name:"위원"+i,dept:"심사",scores:sc}); } return subs; }
+function medOf(cat, team){ var r=(rankCache[cat]||[]).filter(function(x){return x.t===team;})[0]; return r?r.med.toFixed(1):"0.0"; }
+function computeAndRender(subs, src){
+  var DATA = SCORING.buildDATA(CONFIG, subs); rankCache={};
+  catList().forEach(function(cat){ rankCache[cat]=SCORING.ranking(CONFIG, DATA, cat); });
+  renderSlots();
+  document.getElementById("confirmRow").style.display="flex";
+  var m=document.getElementById("loadMsg"); m.className="msg ok"; m.textContent=src+" · "+subs.length+"건 로드 · 슬롯 조정 후 [확정].";
+  updConfirmStatus();
+}
+function renderSlots(){
+  var existing=readConfirmed();
+  document.getElementById("slots").innerHTML = catList().map(function(cat){
+    var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
+    var rows=rankCache[cat]||[];
+    var slots=spec.map(function(a,i){
+      var pre = (existing && existing.winners && existing.winners[cat] && existing.winners[cat][i]) ? existing.winners[cat][i].team : (rows[a.rank-1] && rows[a.rank-1].t);
+      var opts=CONFIG.teams.map(function(t){ return "<option value='"+esc(t)+"' data-med='"+medOf(cat,t)+"'"+(t===pre?" selected":"")+">"+esc(t)+" ("+medOf(cat,t)+"점)</option>"; }).join("");
+      return "<div class='slot'><span class='slot-rank "+(a.rank===1?'g':'s')+"'>"+esc(a.ttl)+"</span>"
+        +"<select data-cat='"+esc(cat)+"' data-idx='"+i+"'>"+opts+"</select>"
+        +"<span class='slot-prize'>"+esc(a.prize)+"</span></div>";
+    }).join("");
+    return "<div class='cat-block'><div class='cat-h'><b>"+esc(cat)+"</b><span>"+esc(CATMETA[cat]||"")+"</span></div>"+slots+"</div>";
+  }).join("");
+}
+function collectConfirmed(){
+  var winners={};
+  catList().forEach(function(cat){
+    var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
+    winners[cat]=spec.map(function(a,i){
+      var sel=document.querySelector("select[data-cat='"+cat+"'][data-idx='"+i+"']");
+      var team=sel?sel.value:""; var med=sel?parseFloat(sel.options[sel.selectedIndex].getAttribute("data-med")):0;
+      return { rank:a.rank, ttl:a.ttl, prize:a.prize, team:team, med:(isNaN(med)?0:med) };
+    });
+  });
+  return { ts: Date.now(), order: catList(), winners: winners };
+}
+function dupWarn(payload){ var msgs=[]; catList().forEach(function(cat){ var seen={}; (payload.winners[cat]||[]).forEach(function(w){ if(seen[w.team]) msgs.push(cat+"("+w.team+")"); seen[w.team]=1; }); }); return msgs; }
+function updConfirmStatus(){
+  var c=readConfirmed(), m=document.getElementById("confirmMsg");
+  if(!m) return;
+  if(c){ m.className="msg ok"; m.textContent="확정본 있음 ("+fmtTime(c.ts)+") · 시상 발표(라이브)가 이 명단을 송출."; }
+  else { m.className="msg"; m.textContent="확정본 없음 · 시상 발표는 자동 집계로 동작."; }
+}
+
+document.getElementById("load").addEventListener("click", function(){
+  var m=document.getElementById("loadMsg");
+  if(typeof SCORING==="undefined"){ m.className="msg err"; m.textContent="logic.js 로드 실패 — 새로고침."; return; }
+  var a=aIn.value.trim();
+  if(realApi(a)){ m.className="msg"; m.textContent="라이브 집계 불러오는 중…";
+    jsonp(a,"action=get").then(function(d){ if(d&&d.ok){ computeAndRender(d.submissions||[], "라이브 집계"); } else { m.className="msg err"; m.textContent="응답 오류: "+((d&&d.error)||"형식"); } })
+      .catch(function(e){ m.className="msg err"; m.textContent="불러오기 실패: "+e; });
+  } else { computeAndRender(synthSubs(), "데모 데이터(apiUrl 미설정)"); }
+});
+document.getElementById("confirm").addEventListener("click", function(){
+  var payload=collectConfirmed(), w=dupWarn(payload), m=document.getElementById("confirmMsg");
+  if(w.length && !dupArmed){ m.className="msg err"; m.textContent="같은 부문 중복 팀: "+w.join(", ")+" — 다시 [확정]을 누르면 그대로 확정."; dupArmed=true; return; }
+  dupArmed=false;
+  try{ localStorage.setItem(KC, JSON.stringify(payload)); }catch(e){}
+  updConfirmStatus();
+});
+document.getElementById("unconfirm").addEventListener("click", function(){ try{ localStorage.removeItem(KC); }catch(e){} dupArmed=false; updConfirmStatus(); });
+document.getElementById("slots").addEventListener("change", function(){ dupArmed=false; });
+updConfirmStatus();
+</script>
+</body>
+</html>
