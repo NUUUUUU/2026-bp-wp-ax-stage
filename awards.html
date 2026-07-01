@@ -403,6 +403,8 @@ function sceneHTML(s) {
 function render() {
   var s = SCENES[idx];
   revealPhase = 0;
+  stopReveal();                                            // 리빌 음악: 새 장면으로 넘어가면 정지(현수막까진 유지됨)
+  if (s.type === "cover") playOpening(); else stopOpening(); // 오프닝 음악: 커버에서만
   content.classList.remove("out", "outb", "banner");
   document.getElementById("dark").classList.remove("on");
   document.getElementById("stage").classList.remove("bannerlift");
@@ -560,9 +562,49 @@ function audio() {
     comp.threshold.value = -14; comp.knee.value = 22; comp.ratio.value = 3.4; comp.attack.value = 0.004; comp.release.value = 0.22;
     master = actx.createGain(); master.gain.value = muted ? 0 : 0.9;
     master.connect(comp); comp.connect(actx.destination);
+    loadSfx();
   }
   return actx;
 }
+// 짧은 드럼롤은 버퍼(정밀·마스터 경유), 긴 오프닝/리빌 음악은 HTMLAudio 스트리밍.
+// 파일 있으면 우선, 없으면 합성음 폴백: assets/sfx/{drumroll,opening,reveal}.*
+var sfxBuf = { drum: null }, sfxTried = false;
+function loadSfx() {
+  if (sfxTried || !actx) return; sfxTried = true;
+  var exts = [".mp3", ".m4a", ".wav", ".ogg"], i = 0;
+  (function tryNext() {
+    if (i >= exts.length) return;
+    fetch("assets/sfx/drumroll" + exts[i++]).then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); })
+      .then(function (ab) { return actx.decodeAudioData(ab); })
+      .then(function (buf) { sfxBuf.drum = buf; })
+      .catch(function () { tryNext(); });
+  })();
+}
+function playBuf(buf, gain) {
+  if (!actx || !buf || !master) return false;
+  var s = actx.createBufferSource(); s.buffer = buf;
+  var g = actx.createGain(); g.gain.value = (gain == null ? 1 : gain);
+  s.connect(g); g.connect(master); s.start(actx.currentTime + 0.02); return true;
+}
+// 오프닝(커버 화면)·리빌(발표→현수막) 음악 — 스트리밍
+var openingEl = null, revealEl = null, openingFailed = false, revealReady = false;
+function initMedia() {
+  try {
+    openingEl = new Audio("assets/sfx/opening.mp3"); openingEl.preload = "auto"; openingEl.volume = 0.55; openingEl.muted = muted;
+    openingEl.addEventListener("error", function () { openingFailed = true; }, { once: true });
+    revealEl = new Audio("assets/sfx/reveal.mp3"); revealEl.preload = "auto"; revealEl.volume = 0.8; revealEl.muted = muted;
+    revealEl.addEventListener("canplay", function () { revealReady = true; }, { once: true });
+  } catch (e) {}
+}
+function fadeStop(el) {
+  if (!el) return;
+  try { var v0 = el.volume, i = 0, iv = setInterval(function () { i++; el.volume = Math.max(0, v0 * (1 - i / 10)); if (i >= 10) { clearInterval(iv); el.pause(); el.currentTime = 0; el.volume = v0; } }, 45); } catch (e) {}
+}
+function playOpening() { if (muted || openingFailed || !openingEl) return; try { openingEl.muted = muted; openingEl.currentTime = 0; var p = openingEl.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+function stopOpening() { fadeStop(openingEl); }
+// 리빌 음악: 발표 순간 재생, 현수막까지 이어지고 다음 장면(render)에서 정지
+function playReveal(vol) { if (muted || !revealReady || !revealEl) return false; try { revealEl.muted = muted; revealEl.volume = vol; revealEl.currentTime = 0; var p = revealEl.play(); if (p && p.catch) p.catch(function () {}); return true; } catch (e) { return false; } }
+function stopReveal() { if (revealEl) { try { revealEl.pause(); revealEl.currentTime = 0; } catch (e) {} } }
 function noise() {
   var ac = audio(); if (!ac) return null;
   if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); var d = noiseBuf.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
@@ -605,6 +647,7 @@ function chime(rank) {
   if (muted) return;
   try {
     var ac = audio(); if (!ac) return; var t = ac.currentTime + 0.01, big = rank === 1;
+    if (playReveal(big ? 0.85 : 0.7)) return;   // 리빌 음악 있으면 우선(현수막까지 이어짐)
     cymbal(t, big ? 0.20 : 0.14, big ? 1.7 : 1.1);
     timpani(t, big ? 98 : 110, big ? 0.5 : 0.38, big ? 0.9 : 0.7);
     fanfare(t + 0.02, big ? 72 : 69, big);
@@ -615,7 +658,9 @@ function chime(rank) {
 function drumroll() {
   if (muted) return;
   try {
-    var ac = audio(); if (!ac) return; var nb = noise(); if (!nb) return;
+    var ac = audio(); if (!ac) return;
+    if (playBuf(sfxBuf.drum, 1)) return;                 // 녹음 파일 있으면 우선
+    var nb = noise(); if (!nb) return;
     var t0 = ac.currentTime + 0.02, t = t0, n = 34;
     for (var k = 0; k < n; k++) {
       var s = ac.createBufferSource(); s.buffer = nb;
@@ -642,6 +687,7 @@ function toggleMute() {
   muted = !muted;
   var b = document.getElementById("mute"); b.textContent = muted ? "✕" : "♪"; b.style.color = muted ? "#7a6f50" : "#cbbd86";
   if (master && actx) master.gain.setTargetAtTime(muted ? 0 : 0.9, actx.currentTime, 0.02); // 재생 중 소리도 즉시 반영
+  if (openingEl) openingEl.muted = muted; if (revealEl) revealEl.muted = muted;
 }
 
 /* ===================== 시작/오디오 언락 ===================== */
@@ -691,6 +737,7 @@ addEventListener("mousemove", pokeHint);
 addEventListener("resize", function () { sizeBg(); sizeCf(); initParts(); });
 
 sizeBg(); sizeCf(); initParts(); drawBg(); drawCf(); pokeHint();
+initMedia();  // 오프닝/리빌 음악 프리로드
 loadResults();
 </script>
 </body>
