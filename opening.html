@@ -1,0 +1,703 @@
+<!-- 행사 오프닝 브리핑 슬라이드 — 사회자가 Space/→로 넘김: 오프닝→진행순서→심사위원→부문→기준→평가방법→BP Summary→석식→클로징 -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>행사 오프닝 · 2026 경진대회</title>
+<style>
+  /* 로컬 번들 폰트(오프라인·사내망 대응 — guidance/awards와 동일) */
+  @font-face{font-family:"Pretendard";font-weight:900;font-display:block;src:url("assets/fonts/Pretendard-Black.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:700;font-display:block;src:url("assets/fonts/Pretendard-Bold.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:400 500;font-display:block;src:url("assets/fonts/Pretendard-Medium.woff2") format("woff2");}
+  @font-face{font-family:"Pretendard";font-weight:300;font-display:block;src:url("assets/fonts/Pretendard-Light.woff2") format("woff2");}
+  :root{
+    --void:#070A12; --void2:#0B1322;
+    --gold:#E8C977; --gold-soft:#C9B27A; --gold-dim:#7E7048; --ink:#EDE7D2; --muted:#9aa6b8;
+    --serif:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;
+    --sans:"Pretendard","맑은 고딕","Malgun Gothic",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--void);color:var(--ink);
+    font-family:var(--sans);word-break:keep-all;}
+  /* ===== 배경 레이어(시네마틱 조명 — guidance/awards와 동일 언어) ===== */
+  #bg{position:fixed;inset:0;width:100%;height:100%;z-index:1;}
+  #spot{position:fixed;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(125% 85% at 50% 6%, rgba(232,201,119,.22), rgba(160,120,40,.05) 40%, rgba(0,0,0,0) 64%);
+    animation:spotPulse 6.5s ease-in-out infinite;}
+  #rim{position:fixed;inset:0;z-index:2;pointer-events:none;mix-blend-mode:screen;
+    background:radial-gradient(80% 70% at 6% 104%, rgba(58,110,165,.28), rgba(40,80,130,.06) 42%, rgba(0,0,0,0) 66%);}
+  #vig{position:fixed;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 44%, rgba(0,0,0,0) 52%, rgba(0,0,0,.72) 100%);}
+  @keyframes spotPulse{0%,100%{opacity:.8}50%{opacity:1}}
+  /* ===== 골드 시머/디바이더 ===== */
+  .shimmer-gold{background-image:linear-gradient(110deg,#B8862B 0%,#E8C977 16%,#FFFBE9 33%,#F2D88A 46%,#D4AF37 62%,#9A6F1E 100%);
+    background-size:230% 100%;background-position:210% 0;-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:#E8C977;animation:shimmerSweep 3.6s linear infinite;}
+  @keyframes shimmerSweep{0%{background-position:210% 0}100%{background-position:-30% 0}}
+  .g-gold{background:linear-gradient(180deg,#FFF7DD 0%,#F3D88A 32%,#D4AF37 64%,#9A6F1E 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#D4AF37;}
+  .divline{height:2px;width:360px;margin:22px 0;transform-origin:left;
+    background:linear-gradient(90deg,#D4AF37 0%,#FFF0C0 40%,#D4AF37 70%,transparent);}
+  /* ===== 무대 16:9 캔버스 ===== */
+  #stage{position:fixed;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;}
+  #canvas{width:1920px;height:1080px;position:relative;transform-origin:center center;}
+  /* ===== 공통 슬라이드 ===== */
+  .slide{position:absolute;inset:0;padding:104px 128px 128px;display:flex;flex-direction:column;
+    opacity:0;transform:scale(1.02);transition:opacity .5s ease, transform .6s ease;pointer-events:none;}
+  .slide.on{opacity:1;transform:scale(1);pointer-events:auto;}
+  .slide-eyebrow{font-size:22px;font-weight:600;color:var(--gold-soft);letter-spacing:.42em;text-transform:uppercase;margin-bottom:18px;}
+  .slide-title{font-family:var(--serif);font-size:82px;font-weight:900;letter-spacing:-.02em;line-height:1.05;}
+  .placeholder{border:1.5px dashed rgba(212,175,55,.35);border-radius:14px;padding:16px 22px;color:var(--gold-soft);
+    font-size:20px;line-height:1.55;font-weight:500;font-family:var(--sans);background:rgba(212,175,55,.03);}
+  .placeholder b{color:var(--gold);font-weight:700;}
+  /* ===== 슬라이드 0: 오프닝(대기 겸용) ===== */
+  .s-hero{align-items:center;justify-content:center;text-align:center;}
+  .s-hero .brand-big{color:#7e7048;font-size:22px;letter-spacing:.44em;font-weight:500;margin-bottom:20px;}
+  .s-hero .eyebrow-big{margin-bottom:18px;font-size:26px;color:var(--gold-soft);letter-spacing:.32em;text-transform:uppercase;font-weight:600;}
+  .s-hero .title{font-family:var(--serif);font-size:clamp(96px,10vw,142px);font-weight:900;letter-spacing:-.02em;line-height:1.02;}
+  .s-hero .tagline{margin-top:26px;font-size:24px;color:var(--muted);font-weight:500;letter-spacing:.02em;line-height:1.5;max-width:960px;}
+  .s-hero .meta{margin-top:12px;display:flex;gap:80px;justify-content:center;}
+  .s-hero .meta .m{color:#7e7048;font-size:16px;letter-spacing:.32em;font-weight:600;text-transform:uppercase;}
+  .s-hero .meta .m b{color:#F0DDA4;font-weight:700;letter-spacing:0;font-size:26px;text-transform:none;display:block;margin-top:8px;}
+  /* ===== 슬라이드 1: rundown (2단 그리드 · 11항목까지 화면 내 수용) ===== */
+  .rundown{margin-top:28px;display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;
+    grid-template-rows:repeat(6,auto);column-gap:28px;row-gap:12px;}
+  .rd-row{display:grid;grid-template-columns:160px 14px 1fr;align-items:center;gap:20px;padding:18px 26px;
+    border:1px solid rgba(212,175,55,.16);border-radius:15px;background:rgba(255,255,255,.02);}
+  .rd-time{font-family:var(--serif);font-size:36px;font-weight:900;color:var(--gold);letter-spacing:-.02em;}
+  .rd-dot{width:13px;height:13px;border-radius:50%;background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);
+    justify-self:center;box-shadow:0 0 10px rgba(212,175,55,.5);}
+  .rd-label{font-size:23px;font-weight:700;color:#fff;line-height:1.2;}
+  .rd-label small{display:block;font-size:16px;color:var(--muted);font-weight:500;margin-top:4px;letter-spacing:.02em;}
+  .rd-note{margin-top:12px;}
+  /* ===== 슬라이드 2: 심사위원 (CEO 히어로 + 3열 그리드 · 총 11명) ===== */
+  .judges{margin-top:22px;display:flex;flex-direction:column;gap:16px;}
+  .j-hero{padding:26px 34px;border:1.5px solid rgba(232,201,119,.5);border-radius:22px;
+    background:radial-gradient(130% 140% at 30% 0%, #2a1f0a, #0a0e17 78%);
+    display:grid;grid-template-columns:88px 1fr auto;gap:28px;align-items:center;
+    box-shadow:0 12px 40px rgba(212,175,55,.16);}
+  .j-hero .j-avatar{width:88px;height:88px;border-radius:50%;
+    background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);
+    color:#2a1c06;display:grid;place-items:center;font-family:var(--serif);font-size:40px;font-weight:900;
+    box-shadow:0 0 24px rgba(212,175,55,.4);}
+  .j-hero .j-role{font-size:19px;color:var(--gold-soft);letter-spacing:.32em;text-transform:uppercase;font-weight:600;margin-bottom:4px;}
+  .j-hero .j-name{font-family:var(--serif);font-size:52px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1;}
+  .j-hero .j-badge{padding:12px 22px;border-radius:999px;font-size:19px;font-weight:800;
+    background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);color:#2a1c06;letter-spacing:.02em;white-space:nowrap;}
+  .j-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .j-card{padding:22px 26px;border:1px solid rgba(212,175,55,.22);border-radius:16px;
+    background:radial-gradient(130% 140% at 50% 0%, #17130b, #0a0e17 72%);
+    display:flex;flex-direction:column;gap:6px;}
+  .j-card .j-role{font-size:16px;color:var(--gold-soft);letter-spacing:.24em;text-transform:uppercase;font-weight:600;}
+  .j-card .j-name{font-family:var(--serif);font-size:34px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:1.05;}
+  /* ===== 슬라이드 3: 부문 ===== */
+  .cats{margin-top:44px;display:grid;grid-template-columns:repeat(3,1fr);gap:26px;flex:1;}
+  .cat-card{padding:40px 34px;border:1px solid rgba(212,175,55,.28);border-radius:24px;
+    background:radial-gradient(130% 140% at 50% 0%, #17130b, #0a0e17 78%);
+    display:flex;flex-direction:column;}
+  .cat-card .key{font-family:var(--serif);font-size:96px;font-weight:900;line-height:.9;letter-spacing:-.03em;
+    background:linear-gradient(180deg,#FFF7DD 0%,#F3D88A 32%,#D4AF37 64%,#9A6F1E 100%);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#D4AF37;}
+  .cat-card .en{font-size:22px;color:var(--gold-soft);letter-spacing:.14em;margin-top:8px;text-transform:uppercase;}
+  .cat-card .desc{font-size:23px;color:var(--ink);margin-top:22px;line-height:1.5;font-weight:500;}
+  .cat-card .prizes{margin-top:auto;padding:26px 26px 22px;border:1px solid rgba(212,175,55,.28);
+    border-radius:16px;background:rgba(212,175,55,.06);
+    display:flex;flex-direction:column;gap:14px;}
+  .cat-card .prize{display:flex;justify-content:space-between;align-items:center;font-size:26px;}
+  .cat-card .prize .ttl{color:var(--gold-soft);font-weight:700;letter-spacing:.06em;}
+  .cat-card .prize .amt{color:#F0DDA4;font-weight:900;font-size:28px;}
+  /* ===== 슬라이드 4: 심사기준(가중치) ===== */
+  .rubrics{margin-top:34px;display:grid;grid-template-columns:1fr 1fr;gap:32px;flex:1;}
+  .rubric{padding:30px 30px;border:1px solid rgba(212,175,55,.2);border-radius:20px;
+    background:radial-gradient(130% 150% at 50% 0%, #14192a, #0a0e17 72%);}
+  .rubric-h{font-family:var(--serif);font-size:42px;font-weight:900;color:var(--gold);letter-spacing:-.02em;margin-bottom:20px;}
+  .rubric-h small{display:block;font-size:18px;color:var(--muted);font-weight:500;margin-top:4px;letter-spacing:.14em;text-transform:uppercase;}
+  .rubric-row{display:grid;grid-template-columns:1fr 110px;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+  .rubric-row:last-child{border-bottom:none;}
+  .rubric-name{font-size:21px;font-weight:500;}
+  .rubric-w{font-size:26px;font-weight:900;color:#F0DDA4;text-align:right;letter-spacing:-.01em;}
+  .rubric-w small{font-size:17px;color:var(--gold-soft);font-weight:500;margin-left:2px;}
+  /* ===== 슬라이드 5: 평가 방법 ===== */
+  .method{margin-top:32px;display:grid;grid-template-columns:1.15fr 1fr;gap:36px;flex:1;}
+  .m-steps{display:flex;flex-direction:column;gap:18px;}
+  .m-step{display:flex;align-items:center;gap:26px;padding:28px 34px;border-radius:18px;
+    border:1px solid rgba(212,175,55,.28);
+    background:linear-gradient(90deg,rgba(212,175,55,.08),rgba(212,175,55,.01));}
+  .m-step .no{flex:0 0 auto;width:64px;height:64px;border-radius:14px;display:grid;place-items:center;
+    font-family:var(--serif);font-size:30px;font-weight:900;background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);
+    color:#2a1c06;box-shadow:0 0 16px rgba(212,175,55,.3);}
+  .m-step .tx{font-size:28px;font-weight:700;}
+  .m-step .tx small{display:block;font-size:19px;color:var(--muted);font-weight:500;margin-top:6px;}
+  .m-rules{display:flex;flex-direction:column;gap:18px;}
+  .m-rule{padding:28px 32px;border-radius:18px;border:1px solid rgba(212,175,55,.16);background:rgba(255,255,255,.02);}
+  .m-rule-h{font-size:27px;font-weight:900;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .m-rule-d{font-size:22px;color:var(--ink);line-height:1.55;}
+  .m-rule-d b{color:#F0DDA4;font-weight:700;}
+  /* ===== 슬라이드 6: BP Summary ===== */
+  .summary{margin-top:28px;flex:1;padding:40px 44px;border:1px solid rgba(212,175,55,.22);border-radius:22px;
+    background:radial-gradient(130% 140% at 50% 0%, #14192a, #0a0e17 78%);
+    display:flex;flex-direction:column;gap:20px;overflow:hidden;}
+  .summary-lead{font-size:26px;line-height:1.5;color:#F0DDA4;font-weight:500;}
+  .summary-body{font-size:22px;line-height:1.65;color:var(--ink);overflow:auto;}
+  .summary-body p{margin-bottom:14px;}
+  /* ===== 슬라이드 7: 석식 (사진 + 정보 + 약도) ===== */
+  .s-dinner{padding:88px 96px 108px;}
+  .dinner{margin-top:22px;display:grid;grid-template-columns:5fr 7fr;gap:30px;flex:1;align-items:stretch;min-height:0;}
+  .dinner-photo{position:relative;border-radius:22px;overflow:hidden;
+    border:1px solid rgba(212,175,55,.32);box-shadow:0 14px 44px rgba(0,0,0,.55);}
+  .dinner-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .dinner-photo .cap{position:absolute;left:22px;bottom:22px;padding:10px 22px;
+    background:rgba(7,10,18,.72);border:1px solid rgba(232,201,119,.5);border-radius:999px;
+    font-size:22px;font-weight:700;color:#F0DDA4;letter-spacing:.02em;backdrop-filter:blur(6px);}
+  .dinner-info{display:flex;flex-direction:column;gap:14px;padding:28px 34px;
+    border:1px solid rgba(212,175,55,.24);border-radius:22px;
+    background:radial-gradient(130% 140% at 50% 0%, #17130b, #0a0e17 72%);}
+  .dinner-name{font-family:var(--serif);font-size:56px;font-weight:900;color:#F0DDA4;letter-spacing:-.02em;line-height:1.05;}
+  .dinner-name small{font-size:22px;color:var(--gold-soft);font-weight:500;letter-spacing:.14em;margin-left:10px;font-family:var(--sans);text-transform:uppercase;}
+  .dinner-menu{font-size:20px;color:var(--gold-soft);letter-spacing:.14em;font-weight:600;margin-top:-4px;}
+  .dinner-fact{display:grid;grid-template-columns:80px 1fr;align-items:baseline;gap:14px;padding:9px 0;border-top:1px solid rgba(212,175,55,.1);font-size:20px;color:var(--ink);line-height:1.45;}
+  .dinner-fact b{color:var(--gold);font-weight:700;letter-spacing:.24em;font-size:15px;text-transform:uppercase;}
+  .dinner-note{font-size:17px;color:var(--muted);line-height:1.55;font-weight:500;}
+  .dinner-map{margin-top:auto;padding-top:14px;}
+  .dinner-map .lbl{font-size:14px;color:var(--gold-dim);letter-spacing:.32em;text-transform:uppercase;font-weight:700;margin-bottom:8px;}
+  .dinner-map svg{width:100%;height:auto;max-height:180px;display:block;}
+  /* ===== 슬라이드 9: 클로징 ===== */
+  .s-close{align-items:center;justify-content:center;text-align:center;}
+  .s-close .big{font-family:var(--serif);font-size:clamp(96px,9.2vw,132px);font-weight:900;letter-spacing:-.02em;line-height:1.02;}
+  .s-close .sub{margin-top:24px;font-size:24px;color:var(--gold-soft);letter-spacing:.32em;text-transform:uppercase;font-weight:600;}
+  /* ===== HUD ===== */
+  #topline{position:fixed;z-index:7;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,#d4af37 22%,#fff0c0 50%,#d4af37 78%,transparent);opacity:.7;}
+  #brand{position:fixed;z-index:7;top:18px;left:24px;color:#7e7048;font-size:13px;letter-spacing:.34em;font-weight:500;}
+  #ctrls{position:fixed;z-index:7;top:15px;right:18px;display:flex;gap:8px;align-items:center;}
+  #ctrls .idx{color:#7e7048;font-size:13px;letter-spacing:.14em;margin-right:8px;font-weight:500;}
+  #ctrls .idx b{color:var(--gold);font-weight:700;}
+  #ctrls button{background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.3);color:#cbbd86;border-radius:8px;
+    width:38px;height:38px;cursor:pointer;font-size:15px;font-family:inherit;}
+  #ctrls button:hover{background:rgba(212,175,55,.16);}
+  #hint{position:fixed;z-index:7;bottom:18px;left:0;right:0;text-align:center;color:#6b6450;font-size:12.5px;letter-spacing:.1em;transition:opacity .5s;}
+  /* 하단 진행 도트 */
+  #dots{position:fixed;z-index:7;bottom:44px;left:0;right:0;display:flex;justify-content:center;gap:10px;pointer-events:none;}
+  #dots span{width:8px;height:8px;border-radius:50%;background:rgba(212,175,55,.2);transition:.3s;}
+  #dots span.on{background:linear-gradient(160deg,#fbeeb4,#e6c659);box-shadow:0 0 10px rgba(212,175,55,.5);width:22px;border-radius:8px;}
+  /* ===== 시작 게이트 / 블랙아웃 ===== */
+  #start{position:fixed;inset:0;z-index:8;background:var(--void);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2.4vh;cursor:pointer;text-align:center;padding:0 6vw;}
+  #start .gicon{font-size:clamp(40px,6vw,72px);}
+  #start h2{font-family:var(--serif);font-weight:900;font-size:clamp(34px,5.6vw,72px);}
+  #start p{color:var(--gold-soft);font-size:clamp(14px,1.8vw,22px);letter-spacing:.06em;}
+  #blackout{position:fixed;inset:0;z-index:9;background:#000;display:none;} #blackout.on{display:block;}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div id="spot"></div>
+<div id="rim"></div>
+<div id="vig"></div>
+<div id="topline"></div>
+<div id="brand">SHINSHIN GROUP · 2026</div>
+<div id="ctrls">
+  <span class="idx"><b id="curNo">1</b> / <span id="totNo">10</span></span>
+  <button id="mute" title="음소거">♪</button>
+  <button id="fs" title="전체화면">⛶</button>
+</div>
+
+<div id="stage"><div id="canvas">
+  <!-- 0. 오프닝 -->
+  <section class="slide s-hero on" data-idx="0">
+    <div class="brand-big">SHINSHIN GROUP · 2026</div>
+    <div class="eyebrow-big" id="eventEyebrow"></div>
+    <div class="title"><span class="shimmer-gold" id="eventTitle">Global BP · WP Festival</span></div>
+    <div class="tagline" id="eventTagline"></div>
+    <div class="divline" style="width:520px;margin:32px auto 32px;"></div>
+    <div class="meta">
+      <div class="m">DATE<b id="eventDate">—</b></div>
+      <div class="m">PLACE<b id="eventPlace">—</b></div>
+      <div class="m">RUN TIME<b id="eventRunTime">—</b></div>
+    </div>
+  </section>
+
+  <!-- 1. 진행 순서 -->
+  <section class="slide" data-idx="1">
+    <div class="slide-eyebrow">RUNDOWN</div>
+    <div class="slide-title">오늘의 <span class="g-gold">진행 순서</span></div>
+    <div class="rundown" id="rundownList"></div>
+    <div class="rd-note" id="rundownNote"></div>
+  </section>
+
+  <!-- 2. 심사위원 -->
+  <section class="slide" data-idx="2">
+    <div class="slide-eyebrow">JUDGES · 총 11명</div>
+    <div class="slide-title"><span class="g-gold">심사위원</span> 소개</div>
+    <div class="judges" id="judgesList"></div>
+  </section>
+
+  <!-- 3. 부문 -->
+  <section class="slide" data-idx="3">
+    <div class="slide-eyebrow">CATEGORIES</div>
+    <div class="slide-title"><span class="g-gold">시상 부문</span> 소개</div>
+    <div class="cats" id="catsList"></div>
+  </section>
+
+  <!-- 4. 심사기준 -->
+  <section class="slide" data-idx="4">
+    <div class="slide-eyebrow">RUBRIC</div>
+    <div class="slide-title"><span class="g-gold">평가 항목</span> · 가중치</div>
+    <div class="rubrics" id="rubricsList"></div>
+  </section>
+
+  <!-- 5. 평가 방법 -->
+  <section class="slide" data-idx="5">
+    <div class="slide-eyebrow">METHOD</div>
+    <div class="slide-title"><span class="g-gold">심사 평가</span> 방법</div>
+    <div class="method">
+      <div class="m-steps" id="methodSteps"></div>
+      <div class="m-rules">
+        <div class="m-rule">
+          <div class="m-rule-h"><span>✓</span> 본인 소속 팀 자동 제외</div>
+          <div class="m-rule-d">각 심사위원의 본인 소속 팀은 평가 대상에서 <b>자동으로 빠집니다</b>. <b>대표이사는 예외</b>로 전체 부문을 평가합니다.</div>
+        </div>
+        <div class="m-rule">
+          <div class="m-rule-h"><span>◈</span> 중앙값 집계</div>
+          <div class="m-rule-d">각 팀의 최종 점수는 심사위원 점수의 <b>중앙값</b>으로 산정해 극단값의 영향을 배제합니다.</div>
+        </div>
+        <div class="m-rule">
+          <div class="m-rule-h"><span>◆</span> 1~5점 척도</div>
+          <div class="m-rule-d">항목별 1(매우 미흡)~5(매우 우수) 정수 채점, <b>가중치 자동 환산</b>으로 100점 만점 산출.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. BP Summary -->
+  <section class="slide" data-idx="6">
+    <div class="slide-eyebrow">BP PRESENTATION</div>
+    <div class="slide-title"><span class="g-gold">Executive Summary</span></div>
+    <div class="summary" id="bpSummary"></div>
+  </section>
+
+  <!-- 7. 석식 간담회 -->
+  <section class="slide s-dinner" data-idx="7">
+    <div class="slide-eyebrow">AFTER PARTY</div>
+    <div class="slide-title"><span class="g-gold">석식 간담회</span> 안내</div>
+    <div class="dinner">
+      <div class="dinner-photo">
+        <img src="assets/opening/hanwoo1.png" alt="장유 한우1번가 외관">
+        <div class="cap">장유 한우1번가</div>
+      </div>
+      <div class="dinner-info" id="dinnerInfo"></div>
+    </div>
+  </section>
+
+  <!-- 8. 클로징 -->
+  <section class="slide s-close" data-idx="8">
+    <div class="big"><span class="shimmer-gold">이제 대회를 시작합니다</span></div>
+    <div class="divline" style="width:420px;margin:32px auto;"></div>
+    <div class="sub" id="closeSub">2026 BP · WP · AX 경진대회</div>
+  </section>
+</div></div>
+
+<div id="dots"></div>
+<div id="hint">→ / Space 다음 · ← 이전 · Home 처음 · End 끝 · F 전체화면 · B 블랙아웃 · M 음소거</div>
+<div id="start"><div class="gicon">🎬</div><h2 class="g-gold">행사 오프닝 브리핑</h2><p>화면을 클릭하거나 Space를 눌러 시작</p></div>
+<div id="blackout"></div>
+<audio id="bgm" loop></audio>
+
+<script src="config.js"></script>
+<script>
+/* ============================================================
+   BRIEFING · 매년 이 블록만 수정하면 슬라이드에 즉시 반영됩니다.
+   비어 있는 항목은 무대에서 "여기 수정" 플레이스홀더로 보입니다.
+   기본값은 「2026. 07. 30 · 상반기 워크샵 Execution File ver1」 기준.
+   ============================================================ */
+var BRIEFING = {
+  // 오프닝 상단 — 지정 시 CONFIG.event.title 대신 오프닝 헤로에 표시
+  title:    "2026 상반기 워크샵",              // eyebrow(큰 골드) 라인
+  subtitle: "Global BP · WP Festival",          // 메인 타이틀(시머)
+  tagline:  "우수사례 공유와 혁신 성과를 함께 나누는 자리",
+  date:    "2026. 07. 30",
+  place:   "창원2공장 대회의실",
+  runTime: "15:00 ~ 18:00",
+
+  // 오늘의 진행 순서 — PPTX 실제 타임테이블 반영
+  rundown: [
+    { time:"14:55", title:"시작 소개 · 행사일정 안내",             sub:"SESSION 1 · 5분" },
+    { time:"15:00", title:"BP · WP · AX 발표 — 중국법인",           sub:"SESSION 2 · 20분" },
+    { time:"15:20", title:"BP · WP · AX 발표 — 태국법인",           sub:"20분" },
+    { time:"15:40", title:"BP · WP · AX 발표 — H.Q",                sub:"20분" },
+    { time:"16:00", title:"BP · WP · AX 발표 — 한국사업부",         sub:"20분" },
+    { time:"16:20", title:"BP · WP · AX 발표 — 이집트법인",         sub:"20분" },
+    { time:"16:40", title:"BP · WP · AX 발표 — 기술연구센터",       sub:"20분" },
+    { time:"17:00", title:"BP · WP 채점",                             sub:"SESSION 3 · 10분" },
+    { time:"17:10", title:"시상 (BP · WP)",                           sub:"10분 · 무대 리빌" },
+    { time:"17:20", title:"Review · Wrap up · 단체 기념촬영",         sub:"40분" },
+    { time:"18:00", title:"석식 간담회 이동",                         sub:"SESSION 4 · 장유 한우1번가" }
+  ],
+
+  // 심사위원 명단 — 총 11명. { role, name } 순서대로. hero:true 인 항목은 상단 CEO 히어로 카드로 렌더
+  judges: [
+    { role:"대표이사",       name:"최상기", hero:true, badge:"심사위원장" },
+    { role:"사업부장",       name:"박재현" },
+    { role:"기획실장",       name:"김종일" },
+    { role:"재무실장",       name:"정득교" },
+    { role:"원가실장",       name:"김동규" },
+    { role:"신사업실 이사",  name:"김용주" },
+    { role:"기술연구센터장", name:"김현우" },
+    { role:"금형실장",       name:"김윤동" },
+    { role:"태국법인장",     name:"박재성" },
+    { role:"중국법인장",     name:"어낙보" },
+    { role:"이집트법인장",   name:"백상훈" }
+  ],
+
+  // BP Executive Summary 본문 — 빈 줄로 문단 구분
+  bpSummary: "",  // 여기 수정
+
+  // 석식 간담회 — PPTX 확정 데이터. routes는 SVG 약도에 자동 반영
+  dinner: {
+    name:     "한우1번가",
+    branch:   "장유점",
+    menu:     "갈비찜 · 육회 · 식사",
+    address:  "경남 김해시 장유로 554-2",
+    phone:    "055-329-8800",
+    navHint:  "네비게이션 \"한우1번가\" 또는 \"장유로 554-2\" 검색",
+    landmark: "롯데프리미엄아울렛 인근 · 롯데워터파크 도보 1분",
+    depart:   "18:00 이후 · 회사 → 식당 차량 이동",
+    routes: [
+      { from:"창원2공장", minutes:25, km:16 },
+      { from:"김해공장",  minutes:18, km:11 }
+    ]
+  }
+};
+
+/* 부문 메타(영문·부제) */
+var CATMETA = {
+  BP: { en: "Best Practice",     kr: "우수사례 공유" },
+  WP: { en: "Worst Practice",    kr: "실패사례 공유" },
+  AX: { en: "AI Transformation", kr: "AX 전환 실행" }
+};
+
+/* guidance.html과 동일한 심사 입력 4스텝 */
+var STEPS = [
+  { no:"1", t:"평가 분야 선택",    s:"BP · WP · AX 중 현재 발표 분야" },
+  { no:"2", t:"평가 대상 팀 선택", s:"법인/사업부 카드에서 선택 (본인 소속 제외)" },
+  { no:"3", t:"항목별 1~5점",      s:"각 평가 항목을 1~5점 버튼으로 채점" },
+  { no:"4", t:"제출",              s:"제출 후에도 평가 시간 내 수정 가능" }
+];
+
+/* ---------- 유틸 ---------- */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
+function nonEmpty(s){ return typeof s === "string" && s.trim().length > 0; }
+function phField(txt, key){
+  return nonEmpty(txt) ? esc(txt)
+       : "<span class='placeholder' style='display:inline-block;font-size:22px;padding:12px 18px'>여기 수정 · <b>BRIEFING."+esc(key)+"</b></span>";
+}
+
+/* ---------- 부문 카드(수상 구조 포함) ---------- */
+function catCardHTML(key){
+  var meta = CATMETA[key] || { en:"", kr:"" };
+  var awards = (CONFIG.awards && (CONFIG.awards[key] || CONFIG.awards.default)) || [];
+  var prizeRows = awards.map(function(a){
+    return "<div class='prize'><span class='ttl'>"+esc(a.ttl)+"</span><span class='amt'>"+esc(a.prize)+"</span></div>";
+  }).join("");
+  return "<div class='cat-card'>"
+    + "<div class='key'>"+esc(key)+"</div>"
+    + "<div class='en'>"+esc(meta.en)+"</div>"
+    + "<div class='desc'>"+esc(meta.kr)+"</div>"
+    + "<div class='prizes'>"+prizeRows+"</div>"
+    + "</div>";
+}
+
+/* ---------- 평가 항목 표(가중치) — categoryReuse 반영 ---------- */
+function rubricHTML(key){
+  var meta = CATMETA[key] || {};
+  var rows = (CONFIG.categories[key] || []).map(function(c){
+    return "<div class='rubric-row'><div class='rubric-name'>"+esc(c.n)
+         + "</div><div class='rubric-w'>"+esc(c.w)+"<small>%</small></div></div>";
+  }).join("");
+  // 이 rubric을 공유하는 다른 부문(WP → BP 등) 찾기
+  var shared = [];
+  Object.keys(CONFIG.categoryReuse || {}).forEach(function(other){
+    if (CONFIG.categoryReuse[other] === key) shared.push(other);
+  });
+  var head = shared.length ? key + " · " + shared.join(" · ") : key;
+  var enParts = [meta.en||""].concat(shared.map(function(o){ return (CATMETA[o]||{}).en||""; })).filter(Boolean);
+  return "<div class='rubric'><div class='rubric-h'>"+esc(head)
+       + "<small>"+esc(enParts.join(" · "))+"</small></div>"+rows+"</div>";
+}
+
+/* ============================================================
+   슬라이드 값 채우기
+   ============================================================ */
+var evtBase = (CONFIG.event && CONFIG.event.title) || "2026 경진대회";
+/* 오프닝 헤로 — BRIEFING의 title/subtitle/tagline이 CONFIG 기본을 오버라이드 */
+var heroTitle    = nonEmpty(BRIEFING.subtitle) ? BRIEFING.subtitle : evtBase;
+var heroEyebrow  = nonEmpty(BRIEFING.title)    ? BRIEFING.title    : "";
+var heroTagline  = nonEmpty(BRIEFING.tagline)  ? BRIEFING.tagline  : "";
+document.getElementById("eventTitle").textContent   = heroTitle;
+document.getElementById("eventEyebrow").textContent = heroEyebrow;
+document.getElementById("eventTagline").textContent = heroTagline;
+/* 클로징 서브라인 — subtitle이 있으면 표지와 일치, 아니면 CONFIG 기본 */
+document.getElementById("closeSub").textContent = heroTitle;
+document.getElementById("eventDate").innerHTML    = phField(BRIEFING.date,    "date");
+document.getElementById("eventPlace").innerHTML   = phField(BRIEFING.place,   "place");
+document.getElementById("eventRunTime").innerHTML = phField(BRIEFING.runTime, "runTime");
+
+/* 1. Rundown — 데이터 없으면 예시 + 플레이스홀더 배지 */
+(function(){
+  var listEl = document.getElementById("rundownList");
+  var noteEl = document.getElementById("rundownNote");
+  var items = (BRIEFING.rundown && BRIEFING.rundown.length) ? BRIEFING.rundown : null;
+  var isSample = false;
+  if (!items) {
+    isSample = true;
+    items = [
+      { time:"15:00", title:"개회 · 대회 개요",    sub:"사회자" },
+      { time:"15:10", title:"BP 발표 (팀별 10분)", sub:"참가팀 순차 발표" },
+      { time:"16:20", title:"WP · AX 발표",        sub:"참가팀 순차 발표" },
+      { time:"17:30", title:"심사 평가",           sub:"심사위원 QR 접속 · 채점" },
+      { time:"18:00", title:"시상 발표",           sub:"WP → BP → AX 순 리빌" },
+      { time:"19:00", title:"석식 간담회",         sub:"장소 이동" }
+    ];
+  }
+  listEl.innerHTML = items.map(function(r){
+    var sub = r.sub ? "<small>"+esc(r.sub)+"</small>" : "";
+    return "<div class='rd-row'>"
+      + "<div class='rd-time'>"+esc(r.time||"—")+"</div>"
+      + "<div class='rd-dot'></div>"
+      + "<div class='rd-label'>"+esc(r.title||"")+sub+"</div>"
+      + "</div>";
+  }).join("");
+  noteEl.innerHTML = isSample
+    ? "<div class='placeholder'>여기 수정 · <b>opening.html 상단 BRIEFING.rundown</b>에 실제 시간표를 넣어주세요 (지금은 예시).</div>"
+    : "";
+})();
+
+/* 2. 심사위원 — hero(대표이사) 1장 + 3열 그리드 카드 렌더 */
+(function(){
+  var list = document.getElementById("judgesList");
+  var js = BRIEFING.judges || [];
+  if (!js.length) {
+    list.innerHTML = "<div class='placeholder'>여기 수정 · <b>opening.html 상단 BRIEFING.judges</b>에 심사위원 명단을 넣어주세요. 각 항목은 <b>{ role, name }</b> 형태 (필요 시 hero:true, badge 지정).</div>";
+    return;
+  }
+  var hero = js.filter(function(j){ return j.hero; })[0];
+  var rest = js.filter(function(j){ return !j.hero; });
+  var heroHTML = "";
+  if (hero) {
+    var initial = (hero.name || "◆").charAt(0);
+    var badge = hero.badge ? "<div class='j-badge'>"+esc(hero.badge)+"</div>" : "<div></div>";
+    heroHTML = "<div class='j-hero'>"
+      + "<div class='j-avatar'>"+esc(initial)+"</div>"
+      + "<div><div class='j-role'>"+esc(hero.role||"")+"</div>"
+      + "<div class='j-name'>"+esc(hero.name||"")+"</div></div>"
+      + badge
+      + "</div>";
+  }
+  var gridHTML = "<div class='j-grid'>" + rest.map(function(j){
+    return "<div class='j-card'>"
+      + "<div class='j-role'>"+esc(j.role||"")+"</div>"
+      + "<div class='j-name'>"+esc(j.name||"")+"</div>"
+      + "</div>";
+  }).join("") + "</div>";
+  list.innerHTML = heroHTML + gridHTML;
+})();
+
+/* 3. 부문 */
+document.getElementById("catsList").innerHTML = ["BP","WP","AX"].map(catCardHTML).join("");
+
+/* 4. 심사기준 — 실제 rubric 소유자만(BP, AX). WP는 BP 헤딩에 병기 */
+document.getElementById("rubricsList").innerHTML = ["BP","AX"].map(rubricHTML).join("");
+
+/* 5. 평가 방법 4스텝 */
+document.getElementById("methodSteps").innerHTML = STEPS.map(function(s){
+  return "<div class='m-step'><div class='no'>"+s.no+"</div>"
+       + "<div class='tx'>"+esc(s.t)+"<small>"+esc(s.s)+"</small></div></div>";
+}).join("");
+
+/* 6. BP Summary */
+(function(){
+  var box = document.getElementById("bpSummary");
+  var body = BRIEFING.bpSummary;
+  if (nonEmpty(body)) {
+    var paras = body.split(/\n\s*\n/).map(function(p){
+      return "<p>"+esc(p).replace(/\n/g,"<br>")+"</p>";
+    }).join("");
+    box.innerHTML = "<div class='summary-body'>"+paras+"</div>";
+  } else {
+    box.innerHTML =
+      "<div class='summary-lead'>BP 발표를 앞두고 오늘의 핵심 메시지를 미리 정리해 소개합니다.</div>"
+    + "<div class='placeholder'>여기 수정 · <b>opening.html 상단 BRIEFING.bpSummary</b>에 임원 요약 본문을 넣어주세요. 문단은 빈 줄로 구분됩니다.</div>";
+  }
+})();
+
+/* 7. 석식 간담회 — 사진은 HTML, 우측 정보 패널만 JS로 렌더 */
+(function(){
+  var dn = BRIEFING.dinner || {};
+  var box = document.getElementById("dinnerInfo");
+  var name = "<div class='dinner-name'>"+esc(dn.name||"—") + (dn.branch?"<small>"+esc(dn.branch)+"</small>":"") + "</div>";
+  var menu = dn.menu ? "<div class='dinner-menu'>"+esc(dn.menu)+"</div>" : "";
+  var fact = "";
+  if (nonEmpty(dn.address)) fact += "<div class='dinner-fact'><b>주소</b><span>"+esc(dn.address)+"</span></div>";
+  if (nonEmpty(dn.phone))   fact += "<div class='dinner-fact'><b>전화</b><span>☎ "+esc(dn.phone)+"</span></div>";
+  if (nonEmpty(dn.depart))  fact += "<div class='dinner-fact'><b>이동</b><span>"+esc(dn.depart)+"</span></div>";
+  var note = "";
+  if (nonEmpty(dn.navHint) || nonEmpty(dn.landmark)) {
+    note = "<div class='dinner-fact'><b>가는 길</b><span class='dinner-note'>"
+         + (nonEmpty(dn.navHint) ? esc(dn.navHint)+"<br>" : "")
+         + (nonEmpty(dn.landmark) ? esc(dn.landmark) : "")
+         + "</span></div>";
+  }
+  /* 약도 SVG — 회사(창원2공장/김해공장) → 한우1번가 스타일라이즈드 라우트 다이어그램 */
+  var routes = dn.routes || [];
+  var mapHTML = "";
+  if (routes.length) {
+    var sx = 60, sy0 = 60, sy1 = 200, dx = 540, dy = 130;
+    var starts = routes.slice(0, 2); // 최대 2개
+    var lines = "", nodes = "";
+    starts.forEach(function(r, i){
+      var y = i === 0 ? sy0 : sy1;
+      // 출발 노드
+      nodes += "<circle cx='"+sx+"' cy='"+y+"' r='16' fill='#1c2740' stroke='rgba(180,200,230,.55)' stroke-width='1.5'/>";
+      nodes += "<text x='"+sx+"' y='"+(y-30)+"' fill='#EDE7D2' font-size='16' font-weight='700' text-anchor='middle'>"+esc(r.from)+"</text>";
+      // 경로 라인(점선)
+      var midX = (sx + dx) / 2, midY = (y + dy) / 2 + (i===0 ? -10 : 10);
+      lines += "<path d='M "+(sx+16)+" "+y+" Q "+midX+" "+midY+", "+(dx-30)+" "+dy+"' stroke='rgba(232,201,119,.5)' stroke-width='2' fill='none' stroke-dasharray='8,5'/>";
+      // 거리 라벨
+      var lx = midX, ly = midY + (i===0 ? -8 : 22);
+      lines += "<text x='"+lx+"' y='"+ly+"' fill='#F0DDA4' font-size='17' font-weight='800' text-anchor='middle'>"+esc(r.minutes)+"분 · "+esc(r.km)+"km</text>";
+    });
+    // 도착 노드(강조)
+    nodes += "<circle cx='"+dx+"' cy='"+dy+"' r='28' fill='url(#dGold)' stroke='rgba(255,247,221,.7)' stroke-width='2'/>";
+    nodes += "<text x='"+dx+"' y='"+(dy+7)+"' fill='#2a1c06' font-size='20' font-weight='900' text-anchor='middle'>★</text>";
+    nodes += "<text x='"+dx+"' y='"+(dy-42)+"' fill='#F0DDA4' font-size='19' font-weight='900' text-anchor='middle'>한우1번가</text>";
+    mapHTML = "<div class='dinner-map'>"
+      + "<div class='lbl'>Route Map · 회사 → 식당</div>"
+      + "<svg viewBox='0 0 600 260' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMidYMid meet'>"
+      + "<defs><radialGradient id='dGold' cx='0.5' cy='0.5' r='0.6'>"
+      + "<stop offset='0' stop-color='#FFF7DD'/><stop offset='0.5' stop-color='#F3D88A'/><stop offset='1' stop-color='#9A6F1E'/>"
+      + "</radialGradient></defs>"
+      + lines + nodes
+      + "</svg></div>";
+  }
+  box.innerHTML = name + menu + fact + note + mapHTML;
+})();
+
+/* ============================================================
+   16:9 스케일 · 슬라이드 이동 · 시작 게이트 · 제어키
+   ============================================================ */
+var slides = document.querySelectorAll(".slide");
+var total = slides.length;
+document.getElementById("totNo").textContent = total;
+
+/* 하단 진행 도트 생성 */
+var dotsEl = document.getElementById("dots");
+for (var _i = 0; _i < total; _i++) dotsEl.appendChild(document.createElement("span"));
+var dotNodes = dotsEl.querySelectorAll("span");
+
+function fit(){
+  var c = document.getElementById("canvas");
+  var s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+  c.style.transform = "scale(" + s + ")";
+}
+window.addEventListener("resize", fit); fit();
+
+var cur = 0;
+function show(i){
+  cur = Math.max(0, Math.min(i, total - 1));
+  for (var k = 0; k < slides.length; k++) slides[k].classList.toggle("on", k === cur);
+  for (var m = 0; m < dotNodes.length; m++) dotNodes[m].classList.toggle("on", m === cur);
+  document.getElementById("curNo").textContent = (cur + 1);
+}
+show(0);
+
+/* 시작 게이트(BGM 자동재생 정책 대응) */
+var started = false, muted = false;
+function start(){
+  if (started) return; started = true;
+  document.getElementById("start").style.display = "none";
+  var bgm = document.getElementById("bgm");
+  if (CONFIG.bgm && CONFIG.bgm.mode === "file") {
+    bgm.src = CONFIG.bgm.file;
+    var base = (CONFIG.bgm.volume != null ? CONFIG.bgm.volume : 0.5);
+    bgm.volume = Math.max(0, Math.min(1, base * 0.6)); // 브리핑은 대화 우선 — 낮게
+    bgm.muted = muted; bgm.play().catch(function(){});
+  }
+}
+document.getElementById("start").addEventListener("click", start);
+
+function toggleMute(){
+  muted = !muted;
+  var b = document.getElementById("mute");
+  b.textContent = muted ? "✕" : "♪";
+  b.style.color = muted ? "#7a6f50" : "#cbbd86";
+  var bgm = document.getElementById("bgm"); if (bgm) bgm.muted = muted;
+}
+function toggleFs(){
+  if (!document.fullscreenElement) {
+    if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  } else if (document.exitFullscreen) document.exitFullscreen();
+}
+
+/* 제어키 */
+var blackout = document.getElementById("blackout");
+document.addEventListener("keydown", function(e){
+  var k = e.key.toLowerCase();
+  if (e.key === " " || e.key === "ArrowRight") {
+    e.preventDefault();
+    if (!started) { start(); return; }
+    show(cur + 1);
+  } else if (e.key === "ArrowLeft") { show(cur - 1); }
+  else if (e.key === "Home") { show(0); }
+  else if (e.key === "End")  { show(total - 1); }
+  else if (k === "f") { toggleFs(); }
+  else if (k === "b") { blackout.classList.toggle("on"); }
+  else if (k === "m") { toggleMute(); }
+});
+document.getElementById("stage").addEventListener("click", function(){ if (started) show(cur + 1); });
+document.getElementById("fs").addEventListener("click", function(e){ e.stopPropagation(); toggleFs(); });
+document.getElementById("mute").addEventListener("click", function(e){ e.stopPropagation(); toggleMute(); });
+
+/* ===== 골드 파티클 배경(awards/guidance와 동일 언어, 약간 낮은 밀도) ===== */
+var bg = document.getElementById("bg"), bx = bg.getContext("2d"), pw, ph2, parts = [];
+function sizeBg(){ pw = bg.width = innerWidth; ph2 = bg.height = innerHeight; }
+function initParts(){
+  parts = []; var n = Math.round(innerWidth / 18);
+  for (var i = 0; i < n; i++) parts.push({
+    x: Math.random() * pw, y: Math.random() * ph2, r: Math.random() * 2.4 + .5,
+    s: Math.random() * .28 + .08, tw: Math.random() * Math.PI * 2,
+    tws: Math.random() * .03 + .006, em: Math.random() < .06
+  });
+}
+function drawBg(){
+  bx.clearRect(0, 0, pw, ph2);
+  for (var i = 0; i < parts.length; i++) {
+    var p = parts[i]; p.y -= p.s; p.tw += p.tws;
+    if (p.y < -6) { p.y = ph2 + 6; p.x = Math.random() * pw; }
+    var a = .24 + Math.sin(p.tw) * .24;
+    var rr = p.em ? p.r * 1.7 : p.r;
+    if (p.em) { bx.shadowBlur = 10; bx.shadowColor = "rgba(255,214,120,.9)"; } else { bx.shadowBlur = 0; }
+    bx.beginPath(); bx.arc(p.x, p.y, rr, 0, 7);
+    bx.fillStyle = "rgba(255," + (206 + (Math.sin(p.tw) * 22 | 0)) + ",120," + a.toFixed(2) + ")";
+    bx.fill();
+  }
+  bx.shadowBlur = 0;
+  requestAnimationFrame(drawBg);
+}
+
+/* 힌트 자동 숨김 */
+var hideT, hint = document.getElementById("hint");
+function pokeHint(){ hint.style.opacity = "1"; clearTimeout(hideT); hideT = setTimeout(function(){ hint.style.opacity = "0"; }, 3000); }
+addEventListener("mousemove", pokeHint);
+addEventListener("resize", function(){ sizeBg(); initParts(); });
+sizeBg(); initParts(); drawBg(); pokeHint();
+
+/* ?slide=N / ?auto — 리허설·스크린샷용 */
+(function maybeJump(){
+  var sp = new URLSearchParams(location.search);
+  if (sp.has("auto")) start();
+  if (sp.has("slide")) show(parseInt(sp.get("slide") || "0", 10) || 0);
+})();
+</script>
+</body>
+</html>
