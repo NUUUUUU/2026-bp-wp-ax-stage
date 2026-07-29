@@ -36,3 +36,15 @@ test("config: 심사페이지 config.json과 entries·teams 일치", () => {
     J.entries.map(({ id, team, cat, sub, title }) => ({ id, team, cat, sub, title }))
   );
 });
+// standalone은 config.js를 인라인 사본으로 들고 있다 — Executive Summary가 이 사본을 읽으므로 드리프트 차단
+test("config: opening-standalone.html 인라인 entries가 config.js와 일치", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const html = fs.readFileSync(path.join(__dirname, "..", "opening-standalone.html"), "utf8");
+  const m = html.match(/\n\s*entries: \[([\s\S]*?)\n\s*\],/);
+  assert.ok(m, "standalone에 인라인 entries 없음");
+  const ids = [...m[1].matchAll(/id: "([^"]+)"/g)].map((x) => x[1]);
+  const titles = [...m[1].matchAll(/title: "([^"]+)"/g)].map((x) => x[1]);
+  assert.deepEqual(ids, CONFIG.entries.map((e) => e.id));
+  assert.deepEqual(titles, CONFIG.entries.map((e) => e.title));
+});
