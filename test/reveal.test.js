@@ -4,12 +4,12 @@ const assert = require("node:assert");
 const CONFIG = require("../config.js");
 const SCORING = require("../logic.js");
 
-// 결정적 더미: 팀별 총점이 명확히 갈리게(중앙값 = 그대로)
+// 결정적 더미: 출품작(entry)별 점수가 config 순서대로 명확히 갈리게(중앙값 = 그대로)
 function demoDATA() {
   const subs = [];
   for (let i = 0; i < 3; i++) {
     const scores = { BP: {}, WP: {}, AX: {} };
-    CONFIG.teams.forEach((t, idx) => ["BP", "WP", "AX"].forEach((c) => { scores[c][t] = 90 - idx * 5; }));
+    CONFIG.entries.forEach((e, idx) => { scores[e.cat][e.id] = 90 - idx * 2; });
     subs.push({ name: "위원" + i, dept: "심사", scores });
   }
   return SCORING.buildDATA(CONFIG, subs);
@@ -26,8 +26,24 @@ test("winners: AX는 rank 1·2·3, 메달 매핑", () => {
   assert.equal(w[0].medal, "🥇");
   assert.equal(w[1].medal, "🥈");
   assert.equal(w[2].medal, "🏅");
-  assert.equal(w[0].team, CONFIG.teams[0]); // 총점 1위
+  // config 순서상 첫 AX 출품작(태국 · AI Safety CCTV)이 최고점
+  const firstAX = CONFIG.entries.filter((e) => e.cat === "AX")[0];
+  assert.equal(w[0].team, firstAX.team);
+  assert.equal(w[0].entry, firstAX.title);
   assert.equal(w[0].prize, "상금 100만원");
+});
+
+test("winners: onePerTeam — 같은 법인 중복 수상 없음", () => {
+  const DATA = demoDATA();
+  ["BP", "WP", "AX"].forEach((cat) => {
+    const teams = SCORING.winners(CONFIG, DATA, cat).map((x) => x.team);
+    assert.equal(new Set(teams).size, teams.length, cat + " 부문 중복 법인 수상");
+  });
+  // AX 상위 2건이 같은 팀이어도(예: 한국 KR-AX1/KR-AX2) 두 번째 건은 건너뛰는지 직접 확인
+  const rows = SCORING.ranking(CONFIG, DATA, "AX");
+  const cand = SCORING.awardRows(CONFIG, rows);
+  const seen = new Set();
+  cand.forEach((r) => { assert.ok(!seen.has(r.t)); seen.add(r.t); });
 });
 
 test("buildScreens: 15화면, WP cat 먼저, 각 분야 수상은 우수상→대상", () => {

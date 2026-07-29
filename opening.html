@@ -1,4 +1,4 @@
-<!-- 행사 오프닝 브리핑 슬라이드 — 사회자가 Space/→로 넘김: 오프닝→진행순서→심사위원→부문→기준→평가방법→BP Summary→석식→클로징 -->
+<!-- 행사 오프닝 브리핑 슬라이드 — 사회자가 Space/→로 넘김: 오프닝→진행순서→부문→심사위원→기준→평가방법→BP Summary→석식→클로징 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -226,18 +226,18 @@
     <div class="rd-note" id="rundownNote"></div>
   </section>
 
-  <!-- 2. 심사위원 -->
+  <!-- 2. 부문 -->
   <section class="slide" data-idx="2">
-    <div class="slide-eyebrow">JUDGES · 총 11명</div>
-    <div class="slide-title"><span class="g-gold">심사위원</span> 소개</div>
-    <div class="judges" id="judgesList"></div>
-  </section>
-
-  <!-- 3. 부문 -->
-  <section class="slide" data-idx="3">
     <div class="slide-eyebrow">CATEGORIES</div>
     <div class="slide-title"><span class="g-gold">시상 부문</span> 소개</div>
     <div class="cats" id="catsList"></div>
+  </section>
+
+  <!-- 3. 심사위원 -->
+  <section class="slide" data-idx="3">
+    <div class="slide-eyebrow">JUDGES · 총 11명</div>
+    <div class="slide-title"><span class="g-gold">심사위원</span> 소개</div>
+    <div class="judges" id="judgesList"></div>
   </section>
 
   <!-- 4. 심사기준 -->
@@ -323,12 +323,12 @@ var BRIEFING = {
   // 오늘의 진행 순서 — PPTX 실제 타임테이블 반영
   rundown: [
     { time:"14:55", title:"시작 소개 · 행사일정 안내",             sub:"SESSION 1 · 5분" },
-    { time:"15:00", title:"BP · WP · AX 발표 — 중국법인",           sub:"SESSION 2 · 20분" },
+    { time:"15:00", title:"BP · WP 발표 — 중국법인",                sub:"SESSION 2 · 20분" },
     { time:"15:20", title:"BP · WP · AX 발표 — 태국법인",           sub:"20분" },
-    { time:"15:40", title:"BP · WP · AX 발표 — H.Q",                sub:"20분" },
+    { time:"15:40", title:"BP · WP · AX 발표 — 이집트법인",         sub:"20분" },
     { time:"16:00", title:"BP · WP · AX 발표 — 한국사업부",         sub:"20분" },
-    { time:"16:20", title:"BP · WP · AX 발표 — 이집트법인",         sub:"20분" },
-    { time:"16:40", title:"BP · WP · AX 발표 — 기술연구센터",       sub:"20분" },
+    { time:"16:20", title:"BP · AX 발표 — AX추진실",                sub:"20분" },
+    { time:"16:40", title:"AX 발표 — HQ",                           sub:"20분" },
     { time:"17:00", title:"BP · WP 채점",                             sub:"SESSION 3 · 10분" },
     { time:"17:10", title:"시상 (BP · WP)",                           sub:"10분 · 무대 리빌" },
     { time:"17:20", title:"Review · Wrap up · 단체 기념촬영",         sub:"40분" },
@@ -379,8 +379,8 @@ var CATMETA = {
 
 /* guidance.html과 동일한 심사 입력 4스텝 */
 var STEPS = [
-  { no:"1", t:"평가 분야 선택",    s:"BP · WP · AX 중 현재 발표 분야" },
-  { no:"2", t:"평가 대상 팀 선택", s:"법인/사업부 카드에서 선택 (본인 소속 제외)" },
+  { no:"1", t:"발표 법인 선택",    s:"발표 순서대로 법인 단계 이동 (본인 소속 제외)" },
+  { no:"2", t:"출품작 확인",       s:"해당 법인의 BP · WP · AX 출품작 카드 확인" },
   { no:"3", t:"항목별 1~5점",      s:"각 평가 항목을 1~5점 버튼으로 채점" },
   { no:"4", t:"제출",              s:"제출 후에도 평가 시간 내 수정 가능" }
 ];

@@ -105,6 +105,9 @@
   @keyframes glowS{0%,100%{filter:drop-shadow(0 0 16px rgba(180,195,215,.3))}50%{filter:drop-shadow(0 0 42px rgba(225,235,245,.72))}}
   .name.rb{transform:scale(1.14);transition:opacity .55s ease, transform .75s cubic-bezier(.15,1.5,.4,1);}
   .name.rb.show{transform:scale(1);}
+  /* 수상 출품작 제목(법인명 아래) */
+  .rv-entry{font-size:clamp(15px,2vw,26px);color:#d9cfae;font-weight:600;margin-top:1vh;line-height:1.45;word-break:keep-all;}
+  .rv-entry small{color:#8a7c52;font-weight:500;margin-right:.55em;}
   /* median 공식점수 — 시그니처 */
   .score{margin-top:2.6vh;display:inline-block;}
   .score-num{font-family:var(--serif);font-weight:900;font-size:clamp(40px,6vw,82px);line-height:1;}
@@ -176,10 +179,30 @@
   .fn-rank.g{color:#2a1c06;background:linear-gradient(160deg,#fbeeb4,#e6c659);}
   .fn-rank.s{color:#1a2230;background:linear-gradient(160deg,#fff,#cdd6e2);}
   .fn-team{font-weight:900;font-size:clamp(18px,2vw,27px);text-align:left;}
+  .fn-team small{display:block;font-weight:500;font-size:clamp(10px,1vw,13px);color:#9a8a5c;line-height:1.35;margin-top:2px;}
   .fn-score{font-weight:700;font-size:clamp(14px,1.5vw,19px);color:#cfc9b6;font-variant-numeric:tabular-nums;}
   .fn-score i{font-style:normal;font-size:.7em;color:#8a7c52;margin-left:1px;}
   .fn-prize{font-weight:700;font-size:clamp(13px,1.5vw,18px);color:#f4e3a8;white-space:nowrap;}
   .fn-congrats{font-family:var(--serif);font-weight:700;font-size:clamp(24px,3.4vw,46px);margin-top:3.2vh;letter-spacing:.02em;}
+  /* ===== Wrap-up (피날레 다음 · Review & Wrap Up · 앞으로 나아가는 이미지) ===== */
+  .wu-stage{position:fixed;inset:0;width:100vw;height:100vh;overflow:hidden;pointer-events:none;}
+  .wu-image{position:absolute;inset:0;background:
+      #070A12 url("assets/awards/wrapup.png") center center/cover no-repeat;
+    animation:wuZoom 16s ease-out both;}
+  @keyframes wuZoom{from{transform:scale(1.06);}to{transform:scale(1.0);}}
+  /* 스크림: 중앙 일출은 살리고, 하단(텍스트 영역)만 짙게 어둡게 — 골드 텍스트 가독성 확보 */
+  .wu-scrim{position:absolute;inset:0;
+    background:
+      linear-gradient(180deg,rgba(7,10,18,0) 0%,rgba(7,10,18,0) 42%,rgba(7,10,18,.55) 68%,rgba(7,10,18,.92) 100%),
+      radial-gradient(120% 60% at 50% 108%, rgba(7,10,18,.85), rgba(7,10,18,0) 60%);}
+  .wu-copy{position:absolute;left:0;right:0;bottom:0;padding:0 6vw 7.5vh;display:flex;flex-direction:column;
+    align-items:center;text-align:center;pointer-events:auto;}
+  .wu-title{font-family:var(--serif);font-weight:900;font-size:clamp(42px,6.8vw,98px);line-height:1.05;letter-spacing:-.01em;
+    text-shadow:0 4px 28px rgba(0,0,0,.75);}
+  .wu-sub{font-family:var(--serif);font-weight:700;font-size:clamp(22px,3.2vw,44px);color:#F0DDA4;margin-top:1.2vh;letter-spacing:.06em;
+    text-shadow:0 3px 18px rgba(0,0,0,.7);}
+  .wu-tag{margin-top:2.4vh;font-size:clamp(13px,1.6vw,20px);color:#e6d9a3;letter-spacing:.22em;font-weight:500;
+    text-shadow:0 2px 10px rgba(0,0,0,.6);}
   /* HUD */
   #progress{position:fixed;z-index:7;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,#d4af37,#fff0c0);transition:width .4s;}
   #brand{position:fixed;z-index:7;top:18px;left:24px;color:#7e7048;font-size:13px;letter-spacing:.34em;font-weight:500;}
@@ -221,12 +244,12 @@
 <script>
 // 운영 콘솔(admin.html)에서 저장한 apiUrl이 있으면 우선 사용
 try { var _a = localStorage.getItem("stage.apiUrl"); if (_a) CONFIG.apiUrl = _a; } catch (e) {}
-// 데모 더미(?demo=1): API 없이 리허설용 — 팀 총점이 명확히 갈리는 합성 제출
+// 데모 더미(?demo=1): API 없이 리허설용 — 출품작 점수가 명확히 갈리는 합성 제출
 var DEMO_SUBS = (function () {
   var subs = [];
   for (var i = 0; i < 3; i++) {
     var scores = { BP: {}, WP: {}, AX: {} };
-    CONFIG.teams.forEach(function (t, idx) { ["BP", "WP", "AX"].forEach(function (c) { scores[c][t] = 92 - idx * 6 - (c === "AX" ? idx : 0); }); });
+    (CONFIG.entries || []).forEach(function (e, idx) { scores[e.cat][e.id] = 94 - idx * 2 - i; });
     subs.push({ name: "위원" + i, dept: "심사", scores: scores });
   }
   return subs;
@@ -236,7 +259,7 @@ var DEMO_SUBS = (function () {
 var CATMETA = { BP: "Best Practice", WP: "Worst Practice", AX: "Digital Transformation" };
 var RANKSUB = { 1: "1st Place", 2: "2nd Place", 3: "3rd Place" };
 // 법인 → 국기(임시; 추후 법인 이미지로 교체). 한국 소속은 태극기.
-var FLAG = { "중국법인": "cn", "태국법인": "th", "이집트법인": "eg", "HQ": "kr", "한국사업부": "kr", "기술연구소": "kr" };
+var FLAG = { "중국법인": "cn", "태국법인": "th", "이집트법인": "eg", "HQ": "kr", "한국사업부": "kr", "AX추진실": "kr" };
 
 var content = document.getElementById("content");
 var SCREENS = [], SCENES = [], WINNERS = [], idx = 0, revealPhase = 0, started = false;
@@ -267,9 +290,10 @@ function buildScenes() {
   SCREENS.forEach(function (s) {
     if (s.type === "cat") SCENES.push({ type: "section", cat: s.label, name: s.name });
     else if (s.type === "suspense") SCENES.push({ type: "teaser", cat: s.label, name: s.name, title: s.title });
-    else SCENES.push({ type: "reveal", cat: s.label, name: s.name, title: s.title, team: s.team, prize: s.prize, med: s.med, rank: s.rank, isGrand: s.isGrand, medal: s.medal });
+    else SCENES.push({ type: "reveal", cat: s.label, name: s.name, title: s.title, team: s.team, entry: s.entry, sub: s.sub, prize: s.prize, med: s.med, rank: s.rank, isGrand: s.isGrand, medal: s.medal });
   });
   SCENES.push({ type: "finale" });
+  SCENES.push({ type: "wrapup" });
   WINNERS = SCREENS.filter(function (s) { return s.type === "reveal"; });
   idx = 0; revealPhase = 0;
 }
@@ -288,7 +312,7 @@ function buildConfirmed(p) {
     SCREENS.push({ type: "cat", cat: cat, label: st.label, name: st.sub || st.label });
     var ws = ((p.winners && p.winners[cat]) || []).slice().sort(function (a, b) { return b.rank - a.rank; });
     ws.forEach(function (w) {
-      var base = { cat: cat, label: st.label, name: st.sub || st.label, rank: w.rank, title: w.ttl || w.title, prize: w.prize, medal: medalFor(w.rank), team: w.team, med: (w.med == null ? 0 : w.med), isGrand: w.rank === 1 };
+      var base = { cat: cat, label: st.label, name: st.sub || st.label, rank: w.rank, title: w.ttl || w.title, prize: w.prize, medal: medalFor(w.rank), team: w.team, entry: w.entry || "", sub: w.sub || "", med: (w.med == null ? 0 : w.med), isGrand: w.rank === 1 };
       SCREENS.push(Object.assign({ type: "suspense" }, base));
       SCREENS.push(Object.assign({ type: "reveal" }, base));
     });
@@ -355,6 +379,7 @@ function sceneHTML(s) {
       + (s.rank === 1
         ? "<div class='name rb'><span class='name-gold'>" + esc(s.team) + "</span></div>"
         : "<div class='name rb'><span class='name-silver'>" + esc(s.team) + "</span></div>")
+      + (s.entry ? "<div class='rv-entry rb'>" + (s.sub ? "<small>" + esc(s.sub) + "</small>" : "") + esc(s.entry) + "</div>" : "")
       + "<div class='score rb'>"
       + "<span class='score-num " + grad + "' data-to='" + s.med.toFixed(1) + "'>0.0</span><span class='score-unit'>점</span>"
       + "<div class='score-line'></div>"
@@ -367,7 +392,7 @@ function sceneHTML(s) {
       + "</div><div class='rank-badge " + ring + "'>" + s.rank + "</div></div></div>"
       + "<div class='banner-bar'><div class='banner-inner'>"
       + "<div class='seal'>경</div>"
-      + "<div class='banner-center'><div class='b-top'>" + esc(s.cat) + " 부문 · " + esc(CATMETA[s.cat] || "") + "</div>"
+      + "<div class='banner-center'><div class='b-top'>" + esc(s.cat) + " 부문 · " + esc(s.entry || CATMETA[s.cat] || "") + "</div>"
       + "<div class='b-main " + grad + "'>" + esc(s.title) + " " + esc(s.team) + " 수상을 축하합니다</div>"
       + "<div class='b-sub'>SHINSHIN AWARDS 2026</div></div>"
       + "<div class='seal'>축</div>"
@@ -382,7 +407,7 @@ function sceneHTML(s) {
       var items = byCat[cat].slice().sort(function (a, b) { return a.rank - b.rank; }).map(function (w) {
         return "<div class='fn-row'>"
           + "<span class='fn-rank " + tierCls(w.rank) + "'>" + esc(w.title) + "</span>"
-          + "<span class='fn-team " + tierGrad(w.rank) + "'>" + esc(w.team) + "</span>"
+          + "<span class='fn-team " + tierGrad(w.rank) + "'>" + esc(w.team) + (w.entry ? "<small>" + esc(w.entry) + "</small>" : "") + "</span>"
           + "<span class='fn-prize'>" + esc(w.prize || "") + "</span></div>";
       }).join("");
       return "<div class='fn-col a' style='animation-delay:" + (0.4 + ci * 0.25).toFixed(2) + "s'>"
@@ -395,6 +420,20 @@ function sceneHTML(s) {
       + "<div class='fn-board'>" + board + "</div>"
       + "<div class='fn-congrats a' style='animation-delay:1.3s'><span class='shimmer-gold'>수상을 축하드립니다</span></div>"
       + "<div class='cv-en a' style='animation-delay:1.6s;margin-top:1.2vh'>SHINSHIN AWARDS 2026</div>";
+  }
+  if (s.type === "wrapup") {
+    // 배경 이미지: assets/awards/wrapup.png (AI 생성 이미지 배치 예정, 없으면 그라디언트로 폴백)
+    return "<div class='wu-stage'>"
+      + "<div class='wu-image'></div>"
+      + "<div class='wu-scrim'></div>"
+      + "<div class='wu-copy'>"
+      + "<div class='sec-eyebrow a' style='animation-delay:.1s'>Next Chapter · Moving Forward</div>"
+      + "<div class='divline grow' style='margin:2.4vh auto;'></div>"
+      + "<div class='wu-title a' style='animation-delay:.35s'><span class='shimmer-gold'>BP · WP · AX 경진대회</span></div>"
+      + "<div class='wu-sub a' style='animation-delay:.7s'>Review &amp; Wrap Up</div>"
+      + "<div class='wu-tag a' style='animation-delay:1.1s'>오늘의 배움과 성과를 내일의 실행으로</div>"
+      + "</div>"
+      + "</div>";
   }
   return "";
 }

@@ -96,6 +96,8 @@
   th{background:var(--ink);color:#fff;font-weight:700;font-size:12px;letter-spacing:.02em;}
   th:first-child{border-radius:0;} /* inner border-collapse handles corners */
   td.crit{text-align:left;font-weight:600;color:var(--ink);background:#FAFAFA;white-space:nowrap;}
+  td.ent{text-align:left;font-weight:700;color:var(--ink);background:#FAFAFA;min-width:240px;}
+  td.ent small{display:block;color:var(--muted);font-weight:500;font-size:11.5px;margin-top:2px;line-height:1.4;}
   .rank1{background:#FFF0F3;font-weight:700;}
   .rank2{background:#F7F7F7;font-weight:600;}
   .flag-red{color:var(--red);font-weight:700;}
@@ -152,6 +154,7 @@
   .wrank{font-size:12.5px;font-weight:800;letter-spacing:.03em;margin-top:8px;}
   .wcard.gold .wrank{color:var(--gold);} .wcard.silver .wrank{color:var(--silver);}
   .wteam{font-size:21px;font-weight:800;letter-spacing:-.02em;margin:3px 0 2px;}
+  .wttl{font-size:12px;color:var(--muted);line-height:1.45;margin:0 0 2px;word-break:keep-all;}
   .wscore{font-size:13px;color:var(--muted);} .wscore b{color:var(--ink);font-size:15px;}
   .wprize{display:inline-block;margin-top:13px;font-size:13px;font-weight:700;color:var(--rausch);
     background:var(--rausch-soft);padding:6px 12px;border-radius:999px;}
@@ -165,6 +168,7 @@
     background:#F1F1F1;color:#555;}
   .row.top .rk{background:var(--rausch);color:#fff;}
   .nm{font-weight:600;font-size:14.5px;}
+  .nm small{display:block;font-weight:500;font-size:11px;color:var(--muted);line-height:1.4;}
   .bar{height:8px;border-radius:999px;background:#EFEFEF;overflow:hidden;}
   .bar > i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FF7A93,var(--rausch));}
   .val{text-align:right;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;}
@@ -221,10 +225,10 @@
         <button class="active" data-cat="BP">BP</button><button data-cat="WP">WP</button><button data-cat="AX">AX</button>
       </div>
       <div class="card">
-        <h3 id="intTitle">BP — 팀별 최종 점수</h3>
+        <h3 id="intTitle">BP — 출품작별 최종 점수</h3>
         <div class="tblwrap"><table id="teamtbl"></table></div>
         <div id="tieNote"></div>
-        <div class="note">공식 점수는 <b>중앙값</b>입니다. ‘평균−중앙값 차이’가 큰 팀은 일부 위원이 극단점을 몰아준 신호입니다.</div>
+        <div class="note">공식 점수는 <b>중앙값</b>입니다. ‘평균−중앙값 차이’가 큰 출품작은 일부 위원이 극단점을 몰아준 신호입니다. 시상은 <b>법인당 부문별 1건</b>(최고 출품작)만 후보가 됩니다.</div>
       </div>
       <div class="card">
         <h3>심사위원별 채점 패턴 모니터링</h3>
@@ -238,15 +242,16 @@
       <div class="hero">
         <div class="eyebrow" id="ceoEyebrow">최종 심사 결과</div>
         <h1>최종 심사 결과 &amp; 시상</h1>
-        <div class="sub" id="ceoSub">분야별 최종 순위 · 100점 만점</div>
+        <div class="sub" id="ceoSub">부문별 출품작 최종 순위 · 100점 만점</div>
         <div class="trust">
           <span class="chip"><span class="ic">✓</span> 집계 <b>중앙값 기반</b></span>
           <span class="chip"><span class="ic">✓</span> 본인 소속 평가 제외</span>
           <span class="chip"><span class="ic">✓</span> 동률 시 대표이사 120% 가중</span>
+          <span class="chip"><span class="ic">✓</span> 법인당 부문 <b>1건 수상</b></span>
           <span class="chip"><span class="ic">✓</span> 담합·몰아주기 자동 차단</span>
         </div>
       </div>
-      <div class="sec-h"><h2>🏆 시상 결과</h2><span class="cnt">분야별 최종 순위 · 100점 만점</span></div>
+      <div class="sec-h"><h2>🏆 시상 결과</h2><span class="cnt">부문별 출품작 최종 순위 · 100점 만점</span></div>
       <div id="ceoReport"></div>
     </section>
   </div>
@@ -262,6 +267,10 @@ var ADMIN_PW  = CONFIG.admin.password;
 var RESET_KEY = CONFIG.admin.resetKey;
 var TEAMS     = CONFIG.teams;
 var ANOM      = CONFIG.anomaly;
+/* 부문별 출품작 목록 — 모든 집계·순위의 기준 축 */
+var ECAT = { BP: [], WP: [], AX: [] };
+(CONFIG.entries || []).forEach(function (e) { if (ECAT[e.cat]) ECAT[e.cat].push(e); });
+function entHTML(e){ return e.team+(e.sub?" · "+e.sub:"")+"<small>"+e.title+"</small>"; }
 
 function checkPw(){
   if(document.getElementById("pw").value===ADMIN_PW){
@@ -299,31 +308,38 @@ function buildDATA(subs){
   subs.forEach(function(sub){
     ["BP","WP","AX"].forEach(function(cat){
       var sc=(sub.scores&&sub.scores[cat])||{};
-      var s=TEAMS.map(function(t){ return (sc[t]==null?null:+sc[t]); });
+      var s=ECAT[cat].map(function(e){ return (sc[e.id]==null?null:+sc[e.id]); });
       D[cat].push({n:sub.name||"(무명)",d:sub.dept||"",s:s});
     });
   });
   return D;
 }
-function wscore(cat,ti){var num=0,den=0,TR=CONFIG.tieRule;DATA[cat].forEach(function(j){var v=j.s[ti];if(v==null)return;var w=(j.d===TR.byDept||j.d===TR.byDeptAlias)?TR.multiplier:1;num+=v*w;den+=w;});return den?num/den:0;}
+function wscore(cat,ei){var num=0,den=0,TR=CONFIG.tieRule;DATA[cat].forEach(function(j){var v=j.s[ei];if(v==null)return;var w=(j.d===TR.byDept||j.d===TR.byDeptAlias)?TR.multiplier:1;num+=v*w;den+=w;});return den?num/den:0;}
 function ranking(cat){
-  var rows=TEAMS.map(function(t,i){var col=DATA[cat].map(function(j){return j.s[i];});return {t:t,i:i,med:med(col),mean:mean(col),tm:tmean(col),w:wscore(cat,i)};});
+  var rows=ECAT[cat].map(function(e,i){var col=DATA[cat].map(function(j){return j.s[i];});return {e:e,t:e.team,i:i,med:med(col),mean:mean(col),tm:tmean(col),w:wscore(cat,i)};});
   rows.sort(function(a,b){return b.med-a.med||b.w-a.w;});
   return rows;
+}
+/* 시상 후보: onePerTeam이면 법인당 최고 출품작 1건만 순서대로 */
+function awardRows(rows){
+  if(!(CONFIG.awards&&CONFIG.awards.onePerTeam)) return rows;
+  var seen={},out=[];
+  rows.forEach(function(r){ if(seen[r.t])return; seen[r.t]=1; out.push(r); });
+  return out;
 }
 
 var intCat="BP";
 function renderInternal(){
   if(!DATA[intCat].length){ document.getElementById("teamtbl").innerHTML="<tr><td>제출 데이터가 없습니다.</td></tr>"; document.getElementById("judgetbl").innerHTML=""; document.getElementById("tieNote").innerHTML=""; document.getElementById("reciprocal").innerHTML="<div class='note'>제출된 평가가 없습니다.</div>"; return; }
   var rows=ranking(intCat);
-  document.getElementById("intTitle").textContent=intCat+" — 팀별 최종 점수 (100점 만점)";
-  var th="<tr><th>평가대상</th><th>중앙값<br>(공식)</th><th>평균</th><th>평균<br>(최대·최소 제외)</th><th>평균−중앙값</th><th>순위</th></tr>";
+  document.getElementById("intTitle").textContent=intCat+" — 출품작별 최종 점수 (100점 만점)";
+  var th="<tr><th>출품작</th><th>중앙값<br>(공식)</th><th>평균</th><th>평균<br>(최대·최소 제외)</th><th>평균−중앙값</th><th>순위</th></tr>";
   rows.forEach(function(x,idx){ var gap=x.mean-x.med, hi=Math.abs(gap)>=ANOM.gapHi;
-    th+="<tr class='"+(idx===0?"rank1":idx===1?"rank2":"")+"'><td class='crit'>"+x.t+"</td><td style='font-weight:700'>"+x.med.toFixed(1)+"</td><td>"+x.mean.toFixed(1)+"</td><td>"+x.tm.toFixed(1)+"</td><td class='"+(hi?"gap-hi":"")+"'>"+(gap>0?"+":"")+gap.toFixed(1)+(hi?" ⚠":"")+"</td><td>"+(idx+1)+"위</td></tr>"; });
+    th+="<tr class='"+(idx===0?"rank1":idx===1?"rank2":"")+"'><td class='ent'>"+entHTML(x.e)+"</td><td style='font-weight:700'>"+x.med.toFixed(1)+"</td><td>"+x.mean.toFixed(1)+"</td><td>"+x.tm.toFixed(1)+"</td><td class='"+(hi?"gap-hi":"")+"'>"+(gap>0?"+":"")+gap.toFixed(1)+(hi?" ⚠":"")+"</td><td>"+(idx+1)+"위</td></tr>"; });
   document.getElementById("teamtbl").innerHTML=th;
   var medVals=rows.map(function(r){return r.med;}), tieVals=medVals.filter(function(v,i){return medVals.indexOf(v)!==i;}).filter(function(v,i,a){return a.indexOf(v)===i;});
   var tn="";
-  if(tieVals.length){ tn="<div class='note warn'><b>동률 발생 → 대표이사 점수 120% 가중 적용</b><br>"; tieVals.forEach(function(v){ var g=rows.filter(function(r){return r.med===v;}); tn+="· 중앙값 "+v.toFixed(1)+" 동률: "+g.map(function(r){return r.t+" (가중 "+r.w.toFixed(2)+")";}).join(" vs ")+" → <b>"+g.slice().sort(function(a,b){return b.w-a.w;})[0].t+"</b> 우선<br>"; }); tn+="</div>"; }
+  if(tieVals.length){ tn="<div class='note warn'><b>동률 발생 → 대표이사 점수 120% 가중 적용</b><br>"; tieVals.forEach(function(v){ var g=rows.filter(function(r){return r.med===v;}); tn+="· 중앙값 "+v.toFixed(1)+" 동률: "+g.map(function(r){return r.t+"·"+r.e.title+" (가중 "+r.w.toFixed(2)+")";}).join(" vs ")+" → <b>"+g.slice().sort(function(a,b){return b.w-a.w;})[0].e.title+"</b> 우선<br>"; }); tn+="</div>"; }
   document.getElementById("tieNote").innerHTML=tn;
   var jh="<tr><th>심사위원</th><th>소속</th><th>평균</th><th>표준편차</th><th>극단점 비율</th><th>상태</th><th>평가 세부내역</th></tr>";
   DATA[intCat].forEach(function(j,idx){ var sc=j.s.filter(function(x){return x!=null;}); var ext=sc.length?sc.filter(function(x){return x<ANOM.extLow||x>ANOM.extHigh;}).length/sc.length*100:0; var sd=std(j.s); var chk=(sd>=ANOM.sdFlag||ext>=ANOM.extRatioFlag);
@@ -331,22 +347,24 @@ function renderInternal(){
   document.getElementById("judgetbl").innerHTML=jh;
   var flagged=DATA[intCat].filter(function(j){var sc=j.s.filter(function(x){return x!=null;});return std(j.s)>=ANOM.sdFlag||(sc.length&&sc.filter(function(x){return x<ANOM.extLow||x>ANOM.extHigh;}).length/sc.length>=ANOM.extRatioFlag/100);}).map(function(j){return j.n+"("+j.d+")";});
   document.getElementById("reciprocal").innerHTML= flagged.length
-    ? "<table><tr><th>의심 위원</th><th>내용</th></tr><tr><td class='crit flag-red'>"+flagged.join(", ")+"</td><td style='text-align:left'>특정 팀에 최고점, 경쟁 팀에 최저점 집중. 상호 밀어주기 패턴 의심 — <b>중앙값 집계로 결과 영향은 차단됨</b></td></tr></table>"
+    ? "<table><tr><th>의심 위원</th><th>내용</th></tr><tr><td class='crit flag-red'>"+flagged.join(", ")+"</td><td style='text-align:left'>특정 출품작에 최고점, 경쟁 출품작에 최저점 집중. 상호 밀어주기 패턴 의심 — <b>중앙값 집계로 결과 영향은 차단됨</b></td></tr></table>"
     : "<div class='note good'>뚜렷한 상호 밀어주기 패턴이 탐지되지 않았습니다.</div>";
 }
-function showDetail(idx){ var j=DATA[intCat][idx]; document.getElementById("detailTitle").textContent="평가 세부내역 — "+j.n+" ("+j.d+") · "+intCat; var h="<tr><th>평가대상</th><th>점수</th></tr>"; TEAMS.forEach(function(t,i){var v=j.s[i];h+="<tr><td class='crit'>"+t+"</td><td>"+(v==null?"<span style='color:#aaa'>평가 제외/미입력</span>":v)+"</td></tr>";}); document.getElementById("detailTbl").innerHTML=h; document.getElementById("detailModal").classList.add("show"); }
+function showDetail(idx){ var j=DATA[intCat][idx]; document.getElementById("detailTitle").textContent="평가 세부내역 — "+j.n+" ("+j.d+") · "+intCat; var h="<tr><th>출품작</th><th>점수</th></tr>"; ECAT[intCat].forEach(function(e,i){var v=j.s[i];h+="<tr><td class='ent'>"+entHTML(e)+"</td><td>"+(v==null?"<span style='color:#aaa'>평가 제외/미입력</span>":v)+"</td></tr>";}); document.getElementById("detailTbl").innerHTML=h; document.getElementById("detailModal").classList.add("show"); }
 
 /* 시상 위너 카드: CONFIG.awards[cat]||default 의 rank→prize 를 .wcard 로. 1등 gold🥇 / 2등 silver🥈 */
 function award(cat,rows){
   var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
+  var cand=awardRows(rows);
   var cards=spec.map(function(a){
-    var r=rows[a.rank-1]; if(!r) return "";
+    var r=cand[a.rank-1]; if(!r) return "";
     var cls=a.rank===1?" gold":a.rank===2?" silver":"";
     var medal=a.rank===1?"🥇":a.rank===2?"🥈":"🏅";
     return "<div class='wcard"+cls+"'>"
       +"<div class='medal'>"+medal+"</div>"
       +"<div class='wrank'>"+(a.ttl||(a.rank+"등"))+"</div>"
-      +"<div class='wteam'>"+r.t+"</div>"
+      +"<div class='wteam'>"+r.t+(r.e.sub?" <span style='font-size:13px;color:var(--muted);font-weight:600'>"+r.e.sub+"</span>":"")+"</div>"
+      +"<div class='wttl'>"+r.e.title+"</div>"
       +"<div class='wscore'>최종 <b>"+r.med.toFixed(1)+"</b> <span style='color:#bbb'>/ 100</span></div>"
       +"<span class='wprize'>"+a.prize+"</span>"
       +"</div>";
@@ -356,7 +374,9 @@ function award(cat,rows){
 /* 시상 요약(메타): "1등 상금 200만원 · 2등 상금 100만원" */
 function awardMeta(cat){
   var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
-  return spec.map(function(a){return (a.rank+"등 ")+a.prize;}).join(" · ");
+  var s=spec.map(function(a){return (a.rank+"등 ")+a.prize;}).join(" · ");
+  if(CONFIG.awards&&CONFIG.awards.onePerTeam) s+=" · 법인당 1건";
+  return s;
 }
 function renderCeo(){
   var cats={}; CONFIG.steps.forEach(function(s){cats[s.key]={k:s.label,name:s.sub||s.label};}); var html="";
@@ -370,12 +390,12 @@ function renderCeo(){
     html+=award(cat,rows);
     // 동률 배너 (tv 로직 유지 · note 로 재스타일)
     var mv=rows.map(function(r){return r.med;}), tv=mv.filter(function(v,i){return mv.indexOf(v)!==i;}).filter(function(v,i,a){return a.indexOf(v)===i;});
-    if(tv.length){ html+="<div class='note warn' style='margin-top:16px'><b>동률 발생</b> — 대표이사 점수 120% 가중으로 순위 확정: "+tv.map(function(v){return rows.filter(function(r){return r.med===v;}).slice().sort(function(a,b){return b.w-a.w;}).map(function(r){return r.t;}).join(" > ");}).join(" / ")+"</div>"; }
+    if(tv.length){ html+="<div class='note warn' style='margin-top:16px'><b>동률 발생</b> — 대표이사 점수 120% 가중으로 순위 확정: "+tv.map(function(v){return rows.filter(function(r){return r.med===v;}).slice().sort(function(a,b){return b.w-a.w;}).map(function(r){return r.t+"·"+r.e.title;}).join(" > ");}).join(" / ")+"</div>"; }
     // 리더보드
     html+="<div class='lead'>";
     rows.forEach(function(x,i){
       var w=Math.max(0,Math.min(100,x.med));
-      html+="<div class='row"+(i===0?" top":"")+"'><span class='rk'>"+(i+1)+"</span><span class='nm'>"+x.t+"</span><span class='bar'><i style='width:"+w+"%'></i></span><span class='val'>"+x.med.toFixed(1)+"<small>중앙값</small></span></div>";
+      html+="<div class='row"+(i===0?" top":"")+"'><span class='rk'>"+(i+1)+"</span><span class='nm'>"+x.t+(x.e.sub?" · "+x.e.sub:"")+"<small>"+x.e.title+"</small></span><span class='bar'><i style='width:"+w+"%'></i></span><span class='val'>"+x.med.toFixed(1)+"<small>중앙값</small></span></div>";
     });
     html+="</div></div>";
   });

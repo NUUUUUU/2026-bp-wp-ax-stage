@@ -61,27 +61,38 @@
     color:#333;line-height:1.65;margin:10px 0;border-left-color:var(--rausch);}
   .note.good{background:var(--green-bg);border-left-color:var(--green);}
 
-  /* ── stepper ── */
-  .stepper{display:flex;gap:8px;margin-bottom:16px;}
-  .stepper .stepitem{flex:1;text-align:center;padding:10px 4px;border:1.5px solid var(--line2);
-    border-radius:12px;background:var(--card);font-weight:700;font-size:13px;
+  /* ── stepper (법인 6단계 · 발표 순서) ── */
+  .stepper{display:flex;gap:6px;margin-bottom:16px;}
+  .stepper .stepitem{flex:1;text-align:center;padding:9px 2px;border:1.5px solid var(--line2);
+    border-radius:12px;background:var(--card);font-weight:700;font-size:12px;
     color:var(--muted);cursor:pointer;transition:all .15s ease;min-height:44px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .stepper .stepitem small{display:block;font-weight:400;font-size:10px;color:#b0b7c3;margin-top:3px;}
-  .stepper .stepitem .num{display:inline-block;width:20px;height:20px;line-height:20px;
-    border-radius:50%;background:var(--line2);color:#fff;font-size:11px;margin-right:5px;font-weight:800;}
+  .stepper .stepitem small{display:block;font-weight:400;font-size:10px;color:#b0b7c3;margin-top:2px;}
+  .stepper .stepitem .num{display:inline-block;width:18px;height:18px;line-height:18px;
+    border-radius:50%;background:var(--line2);color:#fff;font-size:10px;margin-bottom:2px;font-weight:800;}
   .stepper .stepitem.active{border-color:var(--rausch);background:var(--rausch-soft);color:var(--ink);}
   .stepper .stepitem.active .num{background:var(--rausch);}
   .stepper .stepitem.active small{color:var(--rausch);}
 
-  /* ── team cards ── */
+  /* ── step panel heading ── */
+  .panelhead{font-size:14px;font-weight:800;color:var(--ink);margin:4px 2px 10px;}
+  .panelhead small{font-weight:500;color:var(--muted);margin-left:6px;}
+
+  /* ── entry cards ── */
   .teamcard{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;
     overflow:hidden;box-shadow:var(--shadow);}
   .teamcard .thead{background:var(--rausch);color:#fff;padding:12px 16px;font-weight:700;
-    font-size:14px;display:flex;justify-content:space-between;align-items:center;
+    font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:10px;
     letter-spacing:-.01em;}
-  .teamcard .thead .tot{font-size:12.5px;background:rgba(255,255,255,.2);
-    padding:3px 10px;border-radius:999px;font-weight:600;}
+  .teamcard[data-cat="WP"] .thead{background:var(--amber);}
+  .teamcard[data-cat="AX"] .thead{background:var(--green);}
+  .teamcard .thead .chl{display:flex;align-items:center;gap:8px;min-width:0;flex:1;}
+  .teamcard .thead .cbadge{flex-shrink:0;font-size:11px;font-weight:800;padding:3px 8px;
+    border-radius:6px;background:rgba(255,255,255,.28);letter-spacing:.04em;}
+  .teamcard .thead .ttl{min-width:0;line-height:1.35;word-break:keep-all;}
+  .teamcard .thead .ttl small{display:block;font-weight:500;font-size:11px;color:rgba(255,255,255,.85);margin-top:2px;}
+  .teamcard .thead .tot{flex-shrink:0;font-size:12.5px;background:rgba(255,255,255,.2);
+    padding:3px 10px;border-radius:999px;font-weight:600;white-space:nowrap;}
   .teamcard.off{opacity:.55;}
   .teamcard.off .thead{background:#9aa3b2;}
 
@@ -145,7 +156,9 @@
   @media(max-width:520px){
     .greet{padding:20px 16px 18px;}
     .greet h2{font-size:15px;}
-    .stepper .stepitem{font-size:11px;padding:8px 3px;}
+    .stepper{gap:4px;}
+    .stepper .stepitem{font-size:10.5px;padding:7px 1px;}
+    .stepper .stepitem small{display:none;}
     .critrow{padding:10px 12px;gap:8px;}
     .rate button.rbtn{width:42px;height:42px;font-size:14px;}
     .navb{padding:14px 10px;font-size:14px;}
@@ -170,8 +183,8 @@
       <label>소속 부서 <span style="color:var(--red)">*</span></label>
       <select id="dept">
         <option value="">— 소속을 선택하세요 —</option>
-        <option>중국법인</option><option>태국법인</option><option>HQ</option>
-        <option>한국사업부</option><option>이집트법인</option><option>기술연구소</option>
+        <option>중국법인</option><option>태국법인</option><option>이집트법인</option>
+        <option>한국사업부</option><option>AX추진실</option><option>HQ</option>
         <option value="ceo">대표이사 (전체 평가)</option>
       </select>
       <div class="hint">본인 소속 부서는 이해상충 방지를 위해 자동으로 평가에서 제외됩니다.</div>
@@ -180,7 +193,7 @@
   </div>
 
   <div class="stepper" id="stepper"></div>
-  <div class="note">각 항목을 <b>1~5점</b>으로 선택하면 항목별 <b>가중치(%)</b>가 적용되어 100점 만점으로 자동 환산됩니다. <b>1단계 BP → 2단계 WP → 3단계 AX</b> 순서로 모두 입력 후 최종 제출합니다.</div>
+  <div class="note"><b>발표 순서대로 법인별</b>로 채점합니다. 각 출품작의 항목을 <b>1~5점</b>으로 선택하면 부문별 <b>가중치(%)</b>가 적용되어 100점 만점으로 자동 환산됩니다. 모든 법인 단계 입력 후 최종 제출해 주세요.</div>
 
   <div id="panels"></div>
 
@@ -192,7 +205,7 @@
   </div>
 
   <div class="navbtns" id="navBtns"></div>
-  <div class="legend">※ 제출 마감: 각 발표 종료 10분 전 · 1·2·3단계 점수를 모두 입력해 주세요.</div>
+  <div class="legend">※ 각 법인 발표가 끝나면 해당 단계를 바로 채점해 주세요 · 모든 단계 입력 후 최종 제출.</div>
 </div>
 
 <div class="overlay" id="thankModal">
@@ -222,10 +235,38 @@ var CONFIG = {
   "teams": [
     "중국법인",
     "태국법인",
-    "HQ",
-    "한국사업부",
     "이집트법인",
-    "기술연구소"
+    "한국사업부",
+    "AX추진실",
+    "HQ"
+  ],
+  "teamShort": {
+    "중국법인": "중국",
+    "태국법인": "태국",
+    "이집트법인": "이집트",
+    "한국사업부": "한국",
+    "AX추진실": "AX실",
+    "HQ": "HQ"
+  },
+  "entries": [
+    { "id": "CN-BP1", "team": "중국법인", "cat": "BP", "sub": "", "title": "AI Vision Camera를 활용한 Press AX 1.5단계" },
+    { "id": "CN-BP2", "team": "중국법인", "cat": "BP", "sub": "", "title": "지게차 사고 예방 시스템" },
+    { "id": "CN-WP1", "team": "중국법인", "cat": "WP", "sub": "", "title": "C2자동화 병목공정 개선 실패 및 제거 개선 사례" },
+    { "id": "TH-BP1", "team": "태국법인", "cat": "BP", "sub": "", "title": "Air Blower와 Oil 도포기의 One Control System 도입" },
+    { "id": "TH-WP1", "team": "태국법인", "cat": "WP", "sub": "", "title": "태양광 최소 사용량(MCC) 미달에 따른 위약금(Penalty) 발생" },
+    { "id": "TH-AX1", "team": "태국법인", "cat": "AX", "sub": "", "title": "AI Safety CCTV System 구축" },
+    { "id": "EG-BP1", "team": "이집트법인", "cat": "BP", "sub": "", "title": "WM Cabinet Cover 자동세척 (자체개발)" },
+    { "id": "EG-WP1", "team": "이집트법인", "cat": "WP", "sub": "", "title": "TV 개발모델 NU C.B 사전준비 실패" },
+    { "id": "EG-AX1", "team": "이집트법인", "cat": "AX", "sub": "", "title": "위험신호 확인 시스템 개발 (자체개발)" },
+    { "id": "KR-BP1", "team": "한국사업부", "cat": "BP", "sub": "생산1팀", "title": "차세대 AI 교육 System OASIS 구축" },
+    { "id": "KR-WP1", "team": "한국사업부", "cat": "WP", "sub": "생산1/품질1/혁신팀/생기팀", "title": "Door Liner 3 Line (구. 공정 유휴 설비) 반전기 자체 개조" },
+    { "id": "KR-AX1", "team": "한국사업부", "cat": "AX", "sub": "품질1팀", "title": "품질 산점도 시스템 Ver.2 개선활동" },
+    { "id": "KR-BP2", "team": "한국사업부", "cat": "BP", "sub": "생산2팀", "title": "생산 공수 관리 체계 구축 및 Manifold QR 리딩 자동화" },
+    { "id": "KR-WP2", "team": "한국사업부", "cat": "WP", "sub": "자재팀/개발팀", "title": "BOM 사전 검증체계 구축을 통한 견적·정산 오류 예방" },
+    { "id": "KR-AX2", "team": "한국사업부", "cat": "AX", "sub": "생산2팀", "title": "AX정보화" },
+    { "id": "AXD-BP1", "team": "AX추진실", "cat": "BP", "sub": "", "title": "개선제안 페이지 구축" },
+    { "id": "AXD-AX1", "team": "AX추진실", "cat": "AX", "sub": "", "title": "GSMS (서버운영모니터링)" },
+    { "id": "HQ-AX1", "team": "HQ", "cat": "AX", "sub": "기획팀", "title": "경영관리 시스템 구축" }
   ],
   "pmax": 5,
   "categories": {
@@ -310,6 +351,7 @@ var CONFIG = {
     "multiplier": 1.2
   },
   "awards": {
+    "onePerTeam": true,
     "default": [
       {
         "rank": 1,
@@ -366,24 +408,32 @@ var CONFIG = {
 };
 var API_URL = CONFIG.apiUrl;
 var TEAMS = CONFIG.teams;
+var TSHORT = CONFIG.teamShort || {};
 var PMAX = CONFIG.pmax;
 var CRIT = {}; Object.keys(CONFIG.categories).forEach(function(k){ CRIT[k]=CONFIG.categories[k]; });
 Object.keys(CONFIG.categoryReuse||{}).forEach(function(k){ CRIT[k]=CONFIG.categories[CONFIG.categoryReuse[k]]; });
-var STEPS = CONFIG.steps.map(function(s){return s.key;}), curStep=0;
+/* 법인별 출품작 (표시는 BP → WP → AX 순) */
+var CATORD = {BP:0, WP:1, AX:2};
+var BYTEAM = {}; TEAMS.forEach(function(t){ BYTEAM[t]=[]; });
+(CONFIG.entries||[]).forEach(function(e){ if(BYTEAM[e.team]) BYTEAM[e.team].push(e); });
+TEAMS.forEach(function(t){ BYTEAM[t].sort(function(a,b){ return (CATORD[a.cat]||0)-(CATORD[b.cat]||0); }); });
+var ENTRY_BY_ID = {}; (CONFIG.entries||[]).forEach(function(e){ ENTRY_BY_ID[e.id]=e; });
+var curStep=0, LAST=TEAMS.length-1;
 
 function renderInputAll(){
   var dept=document.getElementById("dept").value, isCeo=dept==="ceo";
-  STEPS.forEach(function(cat){
-    var crit=CRIT[cat], html="";
-    TEAMS.forEach(function(t){
-      var off=(!isCeo&&dept===t);
-      html+="<div class='teamcard"+(off?" off":"")+"' data-team='"+t+"'>";
-      html+="<div class='thead'><span>"+t+"</span>"+(off?"<span class='tot'>본인 소속</span>":"<span class='tot'>합계 <b class='sum'>0</b> / 100</span>")+"</div>";
-      if(off){ html+="<div class='offmsg'>본인 소속 부서로 평가에서 제외됩니다.</div>"; }
-      else{ crit.forEach(function(c){ var btns=""; for(var v=1;v<=PMAX;v++)btns+="<button type='button' class='rbtn' data-v='"+v+"'>"+v+"</button>"; html+="<div class='critrow'><div class='cn'>"+c.n+"<small>"+c.d+"</small></div><span class='cmax'>1~"+PMAX+"점<br>가중 "+c.w+"%</span><div class='rate' data-w='"+c.w+"'>"+btns+"</div></div>"; }); }
+  TEAMS.forEach(function(t,ti){
+    var off=(!isCeo&&dept===t), list=BYTEAM[t];
+    var html="<div class='panelhead'>"+t+"<small>출품 "+list.length+"건"+(off?" · 본인 소속 — 평가 제외":"")+"</small></div>";
+    list.forEach(function(e){
+      html+="<div class='teamcard"+(off?" off":"")+"' data-eid='"+e.id+"' data-cat='"+e.cat+"'>";
+      html+="<div class='thead'><span class='chl'><span class='cbadge'>"+e.cat+"</span><span class='ttl'>"+e.title+(e.sub?"<small>"+e.sub+"</small>":"")+"</span></span>"
+        +(off?"<span class='tot'>본인 소속</span>":"<span class='tot'>합계 <b class='sum'>0</b> / 100</span>")+"</div>";
+      if(off){ html+="<div class='offmsg'>본인 소속 부서 출품작으로 평가에서 제외됩니다.</div>"; }
+      else{ CRIT[e.cat].forEach(function(c){ var btns=""; for(var v=1;v<=PMAX;v++)btns+="<button type='button' class='rbtn' data-v='"+v+"'>"+v+"</button>"; html+="<div class='critrow'><div class='cn'>"+c.n+"<small>"+c.d+"</small></div><span class='cmax'>1~"+PMAX+"점<br>가중 "+c.w+"%</span><div class='rate' data-w='"+c.w+"'>"+btns+"</div></div>"; }); }
       html+="</div>";
     });
-    document.getElementById("panel-"+cat).innerHTML=html;
+    document.getElementById("panel-t"+ti).innerHTML=html;
   });
   document.querySelectorAll(".steppanel .teamcard").forEach(function(card){
     var groups=card.querySelectorAll(".rate"), sumEl=card.querySelector(".sum");
@@ -395,12 +445,12 @@ function renderInputAll(){
 }
 function showStep(n){
   curStep=n;
-  STEPS.forEach(function(cat,i){ document.getElementById("panel-"+cat).style.display=(i===n?"block":"none"); });
+  TEAMS.forEach(function(t,i){ document.getElementById("panel-t"+i).style.display=(i===n?"block":"none"); });
   document.querySelectorAll("#stepper .stepitem").forEach(function(el,i){ el.classList.toggle("active",i===n); });
-  document.getElementById("cmtCard").style.display=(n===2?"block":"none");
+  document.getElementById("cmtCard").style.display=(n===LAST?"block":"none");
   var b="";
   if(n>0)b+="<button class='navb prev' id='prevBtn'>← 이전</button>";
-  if(n<2)b+="<button class='navb next' id='nextBtn'>다음 →</button>"; else b+="<button class='navb submit' id='submitBtn'>최종 제출</button>";
+  if(n<LAST)b+="<button class='navb next' id='nextBtn'>다음 →</button>"; else b+="<button class='navb submit' id='submitBtn'>최종 제출</button>";
   document.getElementById("navBtns").innerHTML=b;
   var pv=document.getElementById("prevBtn"),nx=document.getElementById("nextBtn"),sb=document.getElementById("submitBtn");
   if(pv)pv.onclick=function(){showStep(n-1);};
@@ -420,16 +470,19 @@ var cmtList=document.getElementById("cmtList");
 cmtList.appendChild(cmtRow()); cmtList.appendChild(cmtRow());
 document.getElementById("addCmt").addEventListener("click",function(){ cmtList.appendChild(cmtRow()); });
 
-/* 각 팀의 가중 합계 산출 (모든 항목 입력 시에만 점수, 미완성이면 null) + 누락 목록 */
+/* 출품작별 가중 합계 산출 (모든 항목 입력 시에만 점수, 미완성이면 null) + 누락 목록 */
+function shortTitle(s){ s=String(s||""); return s.length>14?s.slice(0,14)+"…":s; }
 function collectScores(){
   var scores={BP:{},WP:{},AX:{}}, miss=[];
-  STEPS.forEach(function(cat){
-    document.querySelectorAll("#panel-"+cat+" .teamcard").forEach(function(card){
+  TEAMS.forEach(function(t,ti){
+    document.querySelectorAll("#panel-t"+ti+" .teamcard").forEach(function(card){
       if(card.classList.contains("off")) return;
-      var team=card.getAttribute("data-team"), groups=card.querySelectorAll(".rate"), empty=false, tot=0;
+      var eid=card.getAttribute("data-eid"), cat=card.getAttribute("data-cat");
+      var groups=card.querySelectorAll(".rate"), empty=false, tot=0;
       groups.forEach(function(g){ var on=g.querySelector("button.on"); if(!on){empty=true;} else {tot+=(+on.getAttribute("data-v"))*(+g.getAttribute("data-w"))/PMAX;} });
-      if(empty){ miss.push(cat+" · "+team); scores[cat][team]=null; }
-      else { scores[cat][team]=Math.round(tot*10)/10; }
+      var e=ENTRY_BY_ID[eid]||{title:eid};
+      if(empty){ miss.push({step:ti, label:t+" ["+cat+"] "+shortTitle(e.title)}); scores[cat][eid]=null; }
+      else { scores[cat][eid]=Math.round(tot*10)/10; }
     });
   });
   return {scores:scores, miss:miss};
@@ -457,29 +510,29 @@ function jsonp(params){
   });
 }
 
-var pendingMiss="";
+var pendingMissStep=-1;
 function finalSubmit(){
   var dept=document.getElementById("dept").value, name=document.getElementById("name").value.trim();
   if(!dept||!name){ alert("상단에 소속과 성명을 입력해 주세요."); showStep(0); return; }
   var r=collectScores();
-  var ico=document.getElementById("thankIco"), title=document.getElementById("thankTitle"), msg=document.getElementById("thankMsg"), edit=document.getElementById("thankEdit");
-  pendingMiss=r.miss.length?r.miss[0]:"";
+  var ico=document.getElementById("thankIco"), title=document.getElementById("thankTitle"), msg=document.getElementById("thankMsg");
+  pendingMissStep=r.miss.length?r.miss[0].step:-1;
   if(r.miss.length){
     ico.textContent="!"; ico.style.background="#FDF3E7"; ico.style.color="#B8860B";
     title.textContent="미입력 항목 확인";
-    msg.innerHTML="아직 점수를 입력하지 않은 항목이 있습니다:<br><b style='color:#C00000'>"+r.miss.join(" · ")+"</b><br><br>수고 많으셨습니다. ‘수정’을 눌러 마저 입력하시거나, ‘확인’을 누르면 입력한 항목만 제출됩니다.";
+    msg.innerHTML="아직 점수를 입력하지 않은 출품작이 있습니다:<br><b style='color:#C00000'>"+r.miss.map(function(m){return m.label;}).join("<br>")+"</b><br><br>수고 많으셨습니다. ‘수정’을 눌러 마저 입력하시거나, ‘확인’을 누르면 입력한 항목만 제출됩니다.";
     document.getElementById("thankEdit").style.display="";
   } else {
     ico.textContent="✓"; ico.style.background="#EDF5E7"; ico.style.color="#548235";
     title.textContent="제출 확인";
-    msg.innerHTML="누락된 항목 없이 모든 평가(BP·WP·AX)가 입력되었습니다.<br>‘확인’을 누르면 제출됩니다.";
+    msg.innerHTML="누락된 출품작 없이 모든 평가가 입력되었습니다.<br>‘확인’을 누르면 제출됩니다.";
     document.getElementById("thankEdit").style.display="";
   }
   document.getElementById("thankModal").classList.add("show");
 }
 document.getElementById("thankEdit").addEventListener("click",function(){
   document.getElementById("thankModal").classList.remove("show");
-  if(pendingMiss) showStep(STEPS.indexOf(pendingMiss.split(" · ")[0]));
+  if(pendingMissStep>=0) showStep(pendingMissStep);
 });
 document.getElementById("thankClose").addEventListener("click",function(){
   var dept=document.getElementById("dept").value, name=document.getElementById("name").value.trim();
@@ -507,12 +560,12 @@ document.querySelector(".greet h2").textContent = CONFIG.event.greetingTitle;
 document.querySelector(".greet p").textContent = CONFIG.event.greeting;
 document.querySelector(".greet .sign").textContent = CONFIG.event.sign;
 document.title = CONFIG.event.title;
-document.getElementById("stepper").innerHTML = CONFIG.steps.map(function(s,i){
-  return "<div data-s='"+i+"' class='"+(i===0?"stepitem active":"stepitem")+"'><span class='num'>"+(i+1)+"</span>"+s.label+"<small>"+s.sub+"</small></div>";
+document.getElementById("stepper").innerHTML = TEAMS.map(function(t,i){
+  return "<div data-s='"+i+"' class='"+(i===0?"stepitem active":"stepitem")+"'><span class='num'>"+(i+1)+"</span>"+(TSHORT[t]||t)+"<small>"+BYTEAM[t].length+"건</small></div>";
 }).join("");
 document.querySelectorAll("#stepper .stepitem").forEach(function(el){ el.addEventListener("click",function(){ showStep(+el.dataset.s); }); });
-document.getElementById("panels").innerHTML = CONFIG.steps.map(function(s){
-  return "<div id='panel-"+s.key+"' class='steppanel' style='display:none'></div>";
+document.getElementById("panels").innerHTML = TEAMS.map(function(t,i){
+  return "<div id='panel-t"+i+"' class='steppanel' style='display:none'></div>";
 }).join("");
 renderInputAll(); showStep(0);
 </script>

@@ -34,12 +34,13 @@ function loadAdmin(config) {
   return ctx;
 }
 
-// 담합 픽스처: 정상 5명(T0=90,T1=70,그외 50) + 담합 3명(T0=10,T1=100,그외 50)
+// 담합 픽스처: 정상 5명(중국 소속 출품작=90, 태국=70, 그외 50) + 담합 3명(중국=10, 태국=100, 그외 50)
+// 점수는 출품작(entry) id 단위로 기록 — 같은 법인의 모든 출품작에 팀 성향 점수를 부여
 function collusion(config) {
   const T = config.teams, skill = T[0], coll = T[1];
   const mk = (name, dept, f) => {
     const scores = { BP: {}, WP: {}, AX: {} };
-    T.forEach((t) => ["BP", "WP", "AX"].forEach((c) => { scores[c][t] = f(t); }));
+    config.entries.forEach((e) => { scores[e.cat][e.id] = f(e.team); });
     return { name, dept, scores };
   };
   const subs = [];
@@ -48,17 +49,19 @@ function collusion(config) {
   return subs;
 }
 
-test("parity: ranking 팀 순서·중앙값이 admin과 동일(BP/WP/AX)", () => {
+test("parity: ranking 출품작 순서·중앙값이 admin과 동일(BP/WP/AX)", () => {
   const subs = collusion(CONFIG);
   const admin = loadAdmin(CONFIG);
   const mineDATA = SCORING.buildDATA(CONFIG, subs);
+  // 부문별 기대 1위 팀: BP/WP는 실력팀(중국). AX는 중국 출품작이 없어 담합 수혜팀(태국)이 1위
+  const expTop = { BP: CONFIG.teams[0], WP: CONFIG.teams[0], AX: CONFIG.teams[1] };
   for (const cat of ["BP", "WP", "AX"]) {
     admin.DATA = admin.buildDATA(subs);
     const a = admin.ranking(cat);
-    assert.equal(a[0].t, CONFIG.teams[0], cat + " admin 집계가 퇴화(빈 DATA)되지 않았는지 확인");
+    assert.equal(a[0].t, expTop[cat], cat + " admin 집계가 퇴화(빈 DATA)되지 않았는지 확인");
     const b = SCORING.ranking(CONFIG, mineDATA, cat);
-    assert.deepEqual(b.map((r) => r.t), a.map((r) => r.t), cat + " 팀 순서 불일치");
-    a.forEach((r, i) => assert.ok(Math.abs(r.med - b[i].med) < 1e-9, cat + " 중앙값 불일치 " + r.t));
+    assert.deepEqual(b.map((r) => r.e.id), a.map((r) => r.e.id), cat + " 출품작 순서 불일치");
+    a.forEach((r, i) => assert.ok(Math.abs(r.med - b[i].med) < 1e-9, cat + " 중앙값 불일치 " + r.e.id));
   }
 });
 

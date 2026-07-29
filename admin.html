@@ -185,7 +185,7 @@
       <span class="msg" id="confirmMsg"></span>
     </div>
     <div class="note">
-      부문별 순위는 접수 점수의 <b>중앙값</b>으로 자동 계산된다. 각 시상 슬롯(대상·우수상)의 팀을 <b>대표님 지시에 따라 드롭다운으로 교체</b>한 뒤
+      부문별 순위는 접수 점수의 <b>중앙값</b>으로 자동 계산된다(법인당 부문 1건 수상 원칙으로 기본 선정). 각 시상 슬롯(대상·우수상)의 수상 출품작을 <b>대표님 지시에 따라 드롭다운으로 교체</b>한 뒤
       <b>확정</b>하면, 이 명단이 이 브라우저에 저장되고 <b>시상 발표(라이브)</b>가 자동 집계 대신 <b>확정본</b>을 그대로 송출한다(옆 점수는 해당 팀의 실제 중앙값).
       리허설만 할 땐 <b>시상 발표(데모)</b> 카드를 쓰면 확정본과 무관하게 동작한다. 확정 후 이미 열려 있는 시상 화면은 <b>R</b>로 새로고침.
     </div>
@@ -268,9 +268,11 @@ function catList(){ return (typeof SCORING!=="undefined") ? SCORING.revealCats(C
 function fmtTime(ts){ try{ var d=new Date(ts); function p(n){return (n<10?"0":"")+n;} return p(d.getHours())+":"+p(d.getMinutes()); }catch(e){ return ""; } }
 
 var rankCache = {}, dupArmed = false;
-// apiUrl 미설정 시 리허설용 합성 제출(awards 데모와 동일 성향)
-function synthSubs(){ var subs=[]; for(var i=0;i<3;i++){ var sc={BP:{},WP:{},AX:{}}; CONFIG.teams.forEach(function(t,idx){ ["BP","WP","AX"].forEach(function(c){ sc[c][t]=92-idx*6-(c==="AX"?idx:0); }); }); subs.push({name:"위원"+i,dept:"심사",scores:sc}); } return subs; }
-function medOf(cat, team){ var r=(rankCache[cat]||[]).filter(function(x){return x.t===team;})[0]; return r?r.med.toFixed(1):"0.0"; }
+// apiUrl 미설정 시 리허설용 합성 제출(awards 데모와 동일 성향) — 출품작(entry) 단위 점수
+function synthSubs(){ var subs=[]; for(var i=0;i<3;i++){ var sc={BP:{},WP:{},AX:{}}; (CONFIG.entries||[]).forEach(function(e,idx){ sc[e.cat][e.id]=94-idx*2-i; }); subs.push({name:"위원"+i,dept:"심사",scores:sc}); } return subs; }
+function rowOf(cat, id){ return (rankCache[cat]||[]).filter(function(x){return x.e.id===id;})[0]; }
+function entOf(id){ return (CONFIG.entries||[]).filter(function(x){return x.id===id;})[0]; }
+function entLabel(r){ return r.t+(r.e.sub?" · "+r.e.sub:"")+" — "+r.e.title; }
 function computeAndRender(subs, src){
   var DATA = SCORING.buildDATA(CONFIG, subs); rankCache={};
   catList().forEach(function(cat){ rankCache[cat]=SCORING.ranking(CONFIG, DATA, cat); });
@@ -284,9 +286,11 @@ function renderSlots(){
   document.getElementById("slots").innerHTML = catList().map(function(cat){
     var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
     var rows=rankCache[cat]||[];
+    var cand=(typeof SCORING!=="undefined"&&SCORING.awardRows)?SCORING.awardRows(CONFIG,rows):rows;
     var slots=spec.map(function(a,i){
-      var pre = (existing && existing.winners && existing.winners[cat] && existing.winners[cat][i]) ? existing.winners[cat][i].team : (rows[a.rank-1] && rows[a.rank-1].t);
-      var opts=CONFIG.teams.map(function(t){ return "<option value='"+esc(t)+"' data-med='"+medOf(cat,t)+"'"+(t===pre?" selected":"")+">"+esc(t)+" ("+medOf(cat,t)+"점)</option>"; }).join("");
+      var exw=(existing && existing.winners && existing.winners[cat] && existing.winners[cat][i])?existing.winners[cat][i]:null;
+      var pre = (exw&&exw.id)?exw.id:(cand[a.rank-1] && cand[a.rank-1].e.id);
+      var opts=rows.map(function(r){ return "<option value='"+esc(r.e.id)+"' data-med='"+r.med.toFixed(1)+"'"+(r.e.id===pre?" selected":"")+">"+esc(entLabel(r))+" ("+r.med.toFixed(1)+"점)</option>"; }).join("");
       return "<div class='slot'><span class='slot-rank "+(a.rank===1?'g':'s')+"'>"+esc(a.ttl)+"</span>"
         +"<select data-cat='"+esc(cat)+"' data-idx='"+i+"'>"+opts+"</select>"
         +"<span class='slot-prize'>"+esc(a.prize)+"</span></div>";
@@ -300,8 +304,9 @@ function collectConfirmed(){
     var spec=(CONFIG.awards[cat]||CONFIG.awards.default||[]);
     winners[cat]=spec.map(function(a,i){
       var sel=document.querySelector("select[data-cat='"+cat+"'][data-idx='"+i+"']");
-      var team=sel?sel.value:""; var med=sel?parseFloat(sel.options[sel.selectedIndex].getAttribute("data-med")):0;
-      return { rank:a.rank, ttl:a.ttl, prize:a.prize, team:team, med:(isNaN(med)?0:med) };
+      var id=sel?sel.value:""; var med=sel?parseFloat(sel.options[sel.selectedIndex].getAttribute("data-med")):0;
+      var e=entOf(id)||{};
+      return { rank:a.rank, ttl:a.ttl, prize:a.prize, id:id, team:e.team||"", entry:e.title||"", sub:e.sub||"", med:(isNaN(med)?0:med) };
     });
   });
   return { ts: Date.now(), order: catList(), winners: winners };
