@@ -1,4 +1,4 @@
-<!-- 행사 오프닝 브리핑 슬라이드 — 사회자가 Space/→로 넘김: 오프닝→진행순서→부문→심사위원→기준→BP Summary→석식→클로징 -->
+<!-- 행사 오프닝 브리핑 슬라이드 — 사회자가 Space/→로 넘김: 오프닝→진행순서→부문→심사위원→기준→평가방법→BP Summary→석식→클로징 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -118,7 +118,23 @@
   .rubric-name{font-size:21px;font-weight:500;}
   .rubric-w{font-size:26px;font-weight:900;color:#F0DDA4;text-align:right;letter-spacing:-.01em;}
   .rubric-w small{font-size:17px;color:var(--gold-soft);font-weight:500;margin-left:2px;}
-  /* ===== 슬라이드 5: BP Summary ===== */
+  /* ===== 슬라이드 5: 평가 방법 ===== */
+  .method{margin-top:32px;display:grid;grid-template-columns:1.15fr 1fr;gap:36px;flex:1;}
+  .m-steps{display:flex;flex-direction:column;gap:18px;}
+  .m-step{display:flex;align-items:center;gap:26px;padding:28px 34px;border-radius:18px;
+    border:1px solid rgba(212,175,55,.28);
+    background:linear-gradient(90deg,rgba(212,175,55,.08),rgba(212,175,55,.01));}
+  .m-step .no{flex:0 0 auto;width:64px;height:64px;border-radius:14px;display:grid;place-items:center;
+    font-family:var(--serif);font-size:30px;font-weight:900;background:linear-gradient(160deg,#fbeeb4,#e6c659 42%,#9a7320);
+    color:#2a1c06;box-shadow:0 0 16px rgba(212,175,55,.3);}
+  .m-step .tx{font-size:28px;font-weight:700;}
+  .m-step .tx small{display:block;font-size:19px;color:var(--muted);font-weight:500;margin-top:6px;}
+  .m-rules{display:flex;flex-direction:column;gap:18px;}
+  .m-rule{padding:28px 32px;border-radius:18px;border:1px solid rgba(212,175,55,.16);background:rgba(255,255,255,.02);}
+  .m-rule-h{font-size:27px;font-weight:900;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .m-rule-d{font-size:22px;color:var(--ink);line-height:1.55;}
+  .m-rule-d b{color:#F0DDA4;font-weight:700;}
+  /* ===== 슬라이드 6: BP Summary ===== */
   .summary{margin-top:28px;flex:1;padding:40px 44px;border:1px solid rgba(212,175,55,.22);border-radius:22px;
     background:radial-gradient(130% 140% at 50% 0%, #14192a, #0a0e17 78%);
     display:flex;flex-direction:column;gap:20px;overflow:hidden;}
@@ -247,15 +263,38 @@
     <div class="rubrics" id="rubricsList"></div>
   </section>
 
-  <!-- 5. BP Summary -->
+  <!-- 5. 평가 방법 -->
   <section class="slide" data-idx="5">
+    <div class="slide-eyebrow">METHOD</div>
+    <div class="slide-title"><span class="g-gold">심사 평가</span> 방법</div>
+    <div class="method">
+      <div class="m-steps" id="methodSteps"></div>
+      <div class="m-rules">
+        <div class="m-rule">
+          <div class="m-rule-h"><span>✓</span> 본인 소속 팀 자동 제외</div>
+          <div class="m-rule-d">각 심사위원의 본인 소속 팀은 평가 대상에서 <b>자동으로 빠집니다</b>. <b>대표이사는 예외</b>로 전체 부문을 평가합니다.</div>
+        </div>
+        <div class="m-rule">
+          <div class="m-rule-h"><span>◈</span> 중앙값 집계</div>
+          <div class="m-rule-d">각 팀의 최종 점수는 심사위원 점수의 <b>중앙값</b>으로 산정해 극단값의 영향을 배제합니다.</div>
+        </div>
+        <div class="m-rule">
+          <div class="m-rule-h"><span>◆</span> 1~5점 척도</div>
+          <div class="m-rule-d">항목별 1(매우 미흡)~5(매우 우수) 정수 채점, <b>가중치 자동 환산</b>으로 100점 만점 산출.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. BP Summary -->
+  <section class="slide" data-idx="6">
     <div class="slide-eyebrow">PRESENTATIONS</div>
     <div class="slide-title"><span class="g-gold">Executive Summary</span></div>
     <div class="summary" id="bpSummary"></div>
   </section>
 
-  <!-- 6. 석식 간담회 -->
-  <section class="slide s-dinner" data-idx="6">
+  <!-- 7. 석식 간담회 -->
+  <section class="slide s-dinner" data-idx="7">
     <div class="slide-eyebrow">AFTER PARTY</div>
     <div class="slide-title"><span class="g-gold">석식 간담회</span> 안내</div>
     <div class="dinner">
@@ -267,8 +306,8 @@
     </div>
   </section>
 
-  <!-- 7. 클로징 -->
-  <section class="slide s-close" data-idx="7">
+  <!-- 8. 클로징 -->
+  <section class="slide s-close" data-idx="8">
     <div class="big"><span class="shimmer-gold">이제 대회를 시작합니다</span></div>
     <div class="divline" style="width:420px;margin:32px auto;"></div>
     <div class="sub" id="closeSub">2026 BP · WP · AX 경진대회</div>
@@ -353,6 +392,14 @@ var CATMETA = {
   WP: { en: "Worst Practice",    kr: "실패사례 공유" },
   AX: { en: "AI Transformation", kr: "AX 전환 실행" }
 };
+
+/* guidance.html과 동일한 심사 입력 4스텝 */
+var STEPS = [
+  { no:"1", t:"발표 법인 선택",    s:"발표 순서대로 법인 단계 이동 (본인 소속 제외)" },
+  { no:"2", t:"출품작 확인",       s:"해당 법인의 BP · WP · AX 출품작 카드 확인" },
+  { no:"3", t:"항목별 1~5점",      s:"각 평가 항목을 1~5점 버튼으로 채점" },
+  { no:"4", t:"제출",              s:"제출 후에도 평가 시간 내 수정 가능" }
+];
 
 /* ---------- 유틸 ---------- */
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
@@ -478,7 +525,13 @@ document.getElementById("catsList").innerHTML = ["BP","WP","AX"].map(catCardHTML
 /* 4. 심사기준 — 실제 rubric 소유자만(BP, AX). WP는 BP 헤딩에 병기 */
 document.getElementById("rubricsList").innerHTML = ["BP","AX"].map(rubricHTML).join("");
 
-/* 5. Executive Summary — 법인별 발표 주제를 CONFIG.entries에서 발표 순서대로 렌더.
+/* 5. 평가 방법 4스텝 */
+document.getElementById("methodSteps").innerHTML = STEPS.map(function(s){
+  return "<div class='m-step'><div class='no'>"+s.no+"</div>"
+       + "<div class='tx'>"+esc(s.t)+"<small>"+esc(s.s)+"</small></div></div>";
+}).join("");
+
+/* 6. Executive Summary — 법인별 발표 주제를 CONFIG.entries에서 발표 순서대로 렌더.
       BRIEFING.bpSummary에 본문이 있으면 목록 위 리드 문단으로 함께 표시한다. */
 (function(){
   var box = document.getElementById("bpSummary");
