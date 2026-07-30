@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko">
-<!-- 시상 발표 무대 슬라이드 — 라이브 집계(JSONP)→스냅샷, WP→BP→AX 우수상→대상 시네마틱 갈라 리빌 -->
+<!-- 시상 발표 무대 슬라이드 — 라이브 집계(JSONP)→스냅샷, WP→BP→AX 우수상→최우수상 시네마틱 갈라 리빌 -->
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -265,7 +265,7 @@ var content = document.getElementById("content");
 var SCREENS = [], SCENES = [], WINNERS = [], idx = 0, revealPhase = 0, started = false;
 
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
-// 우리 시상은 대상=금, 나머지(우수상 2·3등)=은. 동(bronze) 없음.
+// 우리 시상은 최우수상=금, 나머지(우수상 2·3등)=은. 동(bronze) 없음.
 function tierCls(rank) { return rank === 1 ? "g" : "s"; }
 function tierGlow(rank) { return rank === 1 ? "glow-g" : "glow-s"; }
 function tierGrad(rank) { return rank === 1 ? "g-gold" : "g-silver"; }
@@ -693,7 +693,7 @@ function fanfare(t, rootMidi, big) {
     o1.start(tt); o2.start(tt); o1.stop(tt + 1.5); o2.stop(tt + 1.5);
   });
 }
-// 공개 순간(리빌) — 심벌 크래시 + 팡파레 + 팀파니 (대상은 더 웅장)
+// 공개 순간(리빌) — 심벌 크래시 + 팡파레 + 팀파니 (최우수상은 더 웅장)
 function chime(rank) {
   if (muted) return;
   try {

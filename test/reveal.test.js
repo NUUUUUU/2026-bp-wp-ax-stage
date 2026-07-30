@@ -1,4 +1,4 @@
-// 시상 매핑·리빌 시퀀스 — 순서(WP→BP→AX, 우수상→대상)와 화면 수 단언
+// 시상 매핑·리빌 시퀀스 — 순서(WP→BP→AX, 우수상→최우수상)와 화면 수 단언
 const test = require("node:test");
 const assert = require("node:assert");
 const CONFIG = require("../config.js");
@@ -46,14 +46,14 @@ test("winners: onePerTeam — 같은 법인 중복 수상 없음", () => {
   cand.forEach((r) => { assert.ok(!seen.has(r.t)); seen.add(r.t); });
 });
 
-test("buildScreens: 15화면, WP cat 먼저, 각 분야 수상은 우수상→대상", () => {
+test("buildScreens: 15화면, WP cat 먼저, 각 분야 수상은 우수상→최우수상", () => {
   const DATA = demoDATA();
   const s = SCORING.buildScreens(CONFIG, DATA);
   // WP(1수상): cat+2 = 3 / BP(2수상): cat+4 = 5 / AX(3수상): cat+6 = 7  => 15
   assert.equal(s.length, 15);
   assert.equal(s[0].type, "cat");
   assert.equal(s[0].cat, "WP");
-  // BP 블록: 첫 reveal은 rank 2(우수상), 마지막 reveal은 rank 1(대상)
+  // BP 블록: 첫 reveal은 rank 2(우수상), 마지막 reveal은 rank 1(최우수상)
   const bp = s.filter((x) => x.cat === "BP" && x.type === "reveal");
   assert.deepEqual(bp.map((x) => x.rank), [2, 1]);
   assert.equal(bp[bp.length - 1].isGrand, true);
